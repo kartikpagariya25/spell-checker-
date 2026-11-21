@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>SpellFix manual test page</title>
+  <style>
+    body { font: 15px/1.5 system-ui, sans-serif; max-width: 640px; margin: 24px auto; padding: 0 16px; }
+    label { display: block; margin-top: 16px; font-weight: 600; }
+    input, textarea, [contenteditable] { width: 100%; box-sizing: border-box; padding: 8px; border: 1px solid #bbb; border-radius: 6px; font: inherit; }
+    [contenteditable] { min-height: 70px; }
+    code { background: #eee; padding: 0 4px; border-radius: 3px; }
+  </style>
+  <link rel="stylesheet" href="../../src/content.css">
+</head>
+<body>
+  <h1>SpellFix manual test page</h1>
+  <p>Loads the real extension scripts without the browser extension. Type <code>teh </code>, <code>recieve </code>, <code>Teh </code> then press Backspace to undo.</p>
+
+  <label for="a">Text input</label>
+  <input id="a" type="text" autocomplete="off">
+
+  <label for="b">Textarea</label>
+  <textarea id="b" rows="3"></textarea>
+
+  <label for="c">Contenteditable</label>
+  <div id="c" contenteditable="true"></div>
+
+  <label for="d">Email input (must NOT be touched)</label>
+  <input id="d" type="email">
+
+  <label for="e">spellcheck="false" textarea (must NOT be touched)</label>
+  <textarea id="e" rows="2" spellcheck="false"></textarea>
+
+  <script>
+    // Stand-in for the extension storage API so the scripts run on a plain page.
+    window.chrome = { storage: { local: { get: (d, cb) => cb(d), set: () => {} }, onChanged: { addListener: () => {} } } };
+  </script>
+  <script src="../../src/dictionary-data.js"></script>
+  <script src="../../src/text-utils.js"></script>
+  <script src="../../src/corrector.js"></script>
+  <script src="../../src/settings.js"></script>
+  <script src="../../src/editors.js"></script>
+  <script src="../../src/feedback.js"></script>
+  <script src="../../src/content.js"></script>
+</body>
+</html>
