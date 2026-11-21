@@ -31,6 +31,9 @@
   <label for="e">spellcheck="false" textarea (must NOT be touched)</label>
   <textarea id="e" rows="2" spellcheck="false"></textarea>
 
+  <label for="f">Name field via autocomplete (must NOT be touched)</label>
+  <input id="f" type="text" autocomplete="given-name">
+
   <script>
     // Stand-in for the extension storage API so the scripts run on a plain page.
     window.chrome = { storage: { local: { get: (d, cb) => cb(d), set: () => {} }, onChanged: { addListener: () => {} } } };
@@ -41,6 +44,7 @@
   <script src="../../src/common-typos.js"></script>
   <script src="../../src/corrector.js"></script>
   <script src="../../src/settings.js"></script>
+  <script src="../../src/field-rules.js"></script>
   <script src="../../src/editors.js"></script>
   <script src="../../src/feedback.js"></script>
   <script src="../../src/content.js"></script>
