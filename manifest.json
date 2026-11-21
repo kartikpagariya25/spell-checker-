@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "SpellFix - Silent Auto-Correct",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Silently fixes spelling mistakes as you type, on any website. Press Backspace right after a fix to keep your original spelling.",
   "author": "Kartik Pagariya",
   "permissions": ["storage", "activeTab"],
