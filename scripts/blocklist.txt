@@ -1,0 +1,6 @@
+# Words that exist in web-derived frequency lists but are really typos or
+# slang, and would otherwise stop us from correcting the real mistake.
+fro
+cant
+ur
+tho
