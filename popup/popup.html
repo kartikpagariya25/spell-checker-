@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SpellFix</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <img src="../icons/icon32.png" alt="" width="24" height="24">
+    <h1>SpellFix</h1>
+  </header>
+
+  <label class="row">
+    <span>
+      <strong>Auto-correct</strong>
+      <small>Fix typos as you type</small>
+    </span>
+    <input type="checkbox" id="enabled" role="switch">
+  </label>
+
+  <label class="row" id="siteRow">
+    <span>
+      <strong>On <span id="host">this site</span></strong>
+      <small>Turn off for this website only</small>
+    </span>
+    <input type="checkbox" id="siteEnabled" role="switch">
+  </label>
+
+  <p class="stat"><span id="count">0</span> words fixed so far</p>
+
+  <details>
+    <summary>Words I keep misspelled on purpose (<span id="learnedCount">0</span>)</summary>
+    <ul id="learned"></ul>
+    <p class="hint" id="learnedHint">Press Backspace right after a fix to add a word here.</p>
+    <button type="button" id="clearLearned" class="link">Forget all</button>
+  </details>
+
+  <p class="hint">Tip: after a fix, press <kbd>Backspace</kbd> to keep what you typed.</p>
+
+  <script src="popup.js"></script>
+</body>
+</html>
