@@ -10,7 +10,7 @@ const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
 const OUT = path.join(ROOT, 'dist', 'spellfix');
-const INCLUDE = ['manifest.json', 'src', 'popup', 'options', 'icons'];
+const INCLUDE = ['manifest.json', 'src', 'popup', 'options', 'welcome', 'icons'];
 
 fs.rmSync(OUT, { recursive: true, force: true });
 fs.mkdirSync(OUT, { recursive: true });
