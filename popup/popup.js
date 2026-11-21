@@ -2,7 +2,7 @@
   'use strict';
 
   const $ = (id) => document.getElementById(id);
-  const DEFAULTS = { enabled: true, disabledHosts: [], learned: [], correctionCount: 0 };
+  const DEFAULTS = { enabled: true, disabledHosts: [], learned: [], correctionCount: 0, recent: [] };
   let hostname = null;
   let state = Object.assign({}, DEFAULTS);
 
@@ -33,6 +33,23 @@
       li.appendChild(remove);
       list.appendChild(li);
     });
+    const recent = $('recent');
+    recent.textContent = '';
+    state.recent.forEach((entry) => {
+      const li = document.createElement('li');
+      const from = document.createElement('span');
+      from.className = 'from';
+      from.textContent = entry.from;
+      const to = document.createElement('span');
+      to.className = 'to';
+      to.textContent = entry.to;
+      const host = document.createElement('span');
+      host.className = 'host';
+      host.textContent = entry.host || '';
+      li.append(from, document.createTextNode('→'), to, host);
+      recent.appendChild(li);
+    });
+    $('recentHint').hidden = state.recent.length > 0;
     $('learnedCount').textContent = String(state.learned.length);
     $('learnedHint').hidden = state.learned.length > 0;
     $('clearLearned').hidden = state.learned.length === 0;
@@ -50,6 +67,7 @@
     save({ disabledHosts: e.target.checked ? others : others.concat(hostname) });
   });
   $('clearLearned').addEventListener('click', () => save({ learned: [] }));
+  $('openOptions').addEventListener('click', () => chrome.runtime.openOptionsPage());
 
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     try {

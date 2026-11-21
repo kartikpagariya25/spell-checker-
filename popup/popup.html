@@ -30,6 +30,12 @@
 
   <p class="stat"><span id="count">0</span> words fixed so far</p>
 
+  <details id="recentBox">
+    <summary>Recently fixed</summary>
+    <ol id="recent" class="recent"></ol>
+    <p class="hint" id="recentHint">Nothing fixed yet.</p>
+  </details>
+
   <details>
     <summary>Words I keep misspelled on purpose (<span id="learnedCount">0</span>)</summary>
     <ul id="learned"></ul>
@@ -38,6 +44,7 @@
   </details>
 
   <p class="hint">Tip: after a fix, press <kbd>Backspace</kbd> to keep what you typed.</p>
+  <p class="footer"><button type="button" id="openOptions" class="link">Settings</button></p>
 
   <script src="popup.js"></script>
 </body>
