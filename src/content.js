@@ -47,13 +47,22 @@
     if (!active) lastCorrection = null;
   }
 
+  // Counters and the recent-fixes list are written together every few seconds
+  // so fast typing doesn't hammer chrome.storage.
+  let pendingRecent = [];
+  function recordRecent(from, to) {
+    pendingRecent.unshift({ from, to, host: location.hostname, at: Date.now() });
+  }
+
   function bumpCount() {
     pendingCount++;
     if (countTimer) return;
     countTimer = setTimeout(() => {
       countTimer = null;
-      Settings.save({ correctionCount: Settings.get().correctionCount + pendingCount });
+      const recent = pendingRecent.concat(Settings.get().recent).slice(0, 10);
+      Settings.save({ correctionCount: Settings.get().correctionCount + pendingCount, recent });
       pendingCount = 0;
+      pendingRecent = [];
     }, 5000);
   }
 
@@ -117,6 +126,7 @@
     if (!ok) return false;
 
     if (hasDelimiter) lastCorrection = { ctx, replaced, original, word: found.word.toLowerCase() };
+    recordRecent(found.word, replacement);
     if (Settings.get().showHighlight) Feedback.flash(ctx, replacement.length, delimiter.length);
     bumpCount();
     return true;
