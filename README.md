@@ -24,11 +24,15 @@ again.
   used locally. Nothing you type ever leaves your browser.
 - Shows a soft green highlight/glow for about a second on the word it fixed.
 - Prefers staying quiet to guessing: ambiguous typos are left alone.
+- Ranks fixes by how fingers actually slip (neighbouring keys, swapped letters).
+- Settings page: sensitivity (careful / balanced / eager), Enter-to-fix,
+  highlight, backup/restore of kept words. `Alt+Shift+S` toggles SpellFix.
+- The popup lists your recent fixes so nothing changes behind your back.
 
 ### Never touched
 
 Passwords, email/URL/number fields, code editors (Monaco, CodeMirror, Ace),
-fields with `spellcheck="false"`, words with digits or symbols (`user@x.com`,
+name / address / phone / username fields, fields with `spellcheck="false"`, words with digits or symbols (`user@x.com`,
 `snake_case`, `v2`), `ALLCAPS`, `camelCase`, and capitalised words in the
 middle of a sentence (probably names).
 
@@ -51,8 +55,16 @@ site, and to review or forget the words you chose to keep.
 | `<input>`/`<textarea>`/`contenteditable` adapters | `src/editors.js` |
 | Highlight cue | `src/feedback.js`, `src/content.css` |
 | Typing watcher, undo logic | `src/content.js` |
+| Frequent-misspelling table | `src/common-typos.js` |
+| Keyboard neighbours | `src/keyboard.js` |
+| Skip rules for personal-data fields | `src/field-rules.js` |
 | Settings store | `src/settings.js` |
-| Popup UI | `popup/` |
+| Popup / settings / welcome pages | `popup/`, `options/`, `welcome/` |
+| Badge, shortcut, first run | `src/background.js` |
+
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full pipeline,
+[PRIVACY.md](PRIVACY.md) for what is stored, and [CONTRIBUTING.md](CONTRIBUTING.md)
+to help out.
 
 The corrector generates all one-letter edits (delete, swap, replace, insert) of
 an unknown word, keeps those that are real words, and picks the clear winner by
