@@ -9,6 +9,7 @@
     "test": "node --test \"test/*.test.js\"",
     "build:dict": "node scripts/build-dictionary.js",
     "build:icons": "node scripts/make-icons.js",
-    "pack": "node scripts/pack.js"
+    "check": "node scripts/check.js",
+    "pack": "node scripts/check.js && node scripts/pack.js"
   }
 }
