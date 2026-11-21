@@ -1,0 +1,6 @@
+/* Soft cue shown for a moment on a word the extension just corrected. */
+::highlight(spellfix-corrected) {
+  background-color: rgba(34, 197, 94, 0.28);
+  text-decoration: underline wavy rgba(22, 163, 74, 0.9);
+  text-decoration-thickness: 1px;
+}
