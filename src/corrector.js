@@ -13,7 +13,8 @@
 
   const Keyboard = root.SpellFixKeyboard || require('./keyboard.js');
   const CommonTypos = root.SpellFixCommonTypos || require('./common-typos.js');
-  const ALPHABET ='abcdefghijklmnopqrstuvwxyz'.split('');
+  const MEMO_LIMIT = 500;
+  const ALPHABET = 'abcdefghijklmnopqrstuvwxyz'.split('');
 
   // Fixes that plain edit distance either gets wrong or finds ambiguous.
   // Values are used verbatim (so contractions keep their apostrophe).
@@ -95,7 +96,7 @@
      * @param {string} word lowercase alphabetic word
      * @returns {string | null} replacement, or null to leave the word alone
      */
-    function correct(word) {
+    function compute(word) {
       if (ignore.has(word)) return null;
       if (Object.prototype.hasOwnProperty.call(OVERRIDES, word)) return OVERRIDES[word];
       if (Object.prototype.hasOwnProperty.call(CommonTypos, word)) return CommonTypos[word];
@@ -116,7 +117,23 @@
       return pickBest([...known2], word, 5);
     }
 
-    return { correct, isKnown, edits1 };
+    // Two-edit searches are the slow path; people repeat their typos, so remember answers.
+    const memo = new Map();
+    function correct(word) {
+      if (ignore.has(word)) return null; // the ignore set may change at any time
+      if (memo.has(word)) {
+        const hit = memo.get(word);
+        memo.delete(word); // refresh recency
+        memo.set(word, hit);
+        return hit;
+      }
+      const result = compute(word);
+      memo.set(word, result);
+      if (memo.size > MEMO_LIMIT) memo.delete(memo.keys().next().value);
+      return result;
+    }
+
+    return { correct, isKnown, edits1, memoSize: () => memo.size };
   }
 
   const api = { createCorrector, edits1, OVERRIDES };
