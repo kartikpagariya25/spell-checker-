@@ -1,0 +1,14 @@
+{
+  "name": "spell-checker",
+  "version": "0.1.0",
+  "description": "Browser extension that silently auto-corrects spelling mistakes as you type. Backspace keeps your original spelling.",
+  "private": true,
+  "license": "MIT",
+  "author": "Kartik Pagariya",
+  "scripts": {
+    "test": "node --test test/",
+    "build:dict": "node scripts/build-dictionary.js",
+    "build:icons": "node scripts/make-icons.js",
+    "pack": "node scripts/pack.js"
+  }
+}
