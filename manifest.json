@@ -34,6 +34,7 @@
         "src/common-typos.js",
         "src/corrector.js",
         "src/settings.js",
+        "src/field-rules.js",
         "src/editors.js",
         "src/feedback.js",
         "src/content.js"
