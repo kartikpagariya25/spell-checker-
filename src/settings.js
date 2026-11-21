@@ -6,7 +6,20 @@
 (function (root) {
   'use strict';
 
-  const DEFAULTS = { enabled: true, disabledHosts: [], learned: [], correctionCount: 0 };
+  const DEFAULTS = {
+    enabled: true,
+    disabledHosts: [],
+    learned: [],
+    correctionCount: 0,
+    // Preferences (options page)
+    sensitivity: 'balanced', // 'careful' | 'balanced' | 'eager'
+    fixOnEnter: true, // also fix the last word when Enter is pressed
+    showHighlight: true, // brief cue on corrected words
+    includeSearchBoxes: true,
+    fixCapitalizedAtSentenceStart: true,
+    recent: [], // last few corrections: { from, to, host, at }
+  };
+  const MAX_RECENT = 10;
   const MAX_LEARNED = 1000;
 
   const area =
@@ -77,7 +90,49 @@
     return state;
   }
 
-  const api = { DEFAULTS, load, save, get, onChange, isActiveOn, learnWord };
+  /** Remembers the latest corrections so the popup can show what changed. */
+  function recordRecent(from, to, host) {
+    const recent = [{ from, to, host, at: Date.now() }].concat(state.recent).slice(0, MAX_RECENT);
+    save({ recent });
+  }
+
+  const SENSITIVITIES = ['careful', 'balanced', 'eager'];
+
+  /** Data the user may want to back up or move to another browser. */
+  function exportData() {
+    return {
+      app: 'spellfix',
+      version: 1,
+      learned: state.learned.slice(),
+      disabledHosts: state.disabledHosts.slice(),
+      sensitivity: state.sensitivity,
+    };
+  }
+
+  /**
+   * Merges exported data into the current settings. Anything malformed is
+   * ignored rather than trusted. Returns what was imported.
+   */
+  function importData(data) {
+    if (!data || typeof data !== 'object' || data.app !== 'spellfix') {
+      throw new Error('Not a SpellFix export file');
+    }
+    const words = Array.isArray(data.learned) ? data.learned : [];
+    const hosts = Array.isArray(data.disabledHosts) ? data.disabledHosts : [];
+    const cleanWords = words.filter((w) => typeof w === 'string' && /^[a-z]{2,40}$/.test(w));
+    const cleanHosts = hosts.filter((h) => typeof h === 'string' && /^[a-z0-9.-]{1,253}$/i.test(h));
+    const patch = {
+      learned: Array.from(new Set(state.learned.concat(cleanWords))).slice(-MAX_LEARNED),
+      disabledHosts: Array.from(new Set(state.disabledHosts.concat(cleanHosts))),
+    };
+    if (SENSITIVITIES.indexOf(data.sensitivity) !== -1) patch.sensitivity = data.sensitivity;
+    save(patch);
+    return { words: cleanWords.length, hosts: cleanHosts.length };
+  }
+
+  const api = {
+    DEFAULTS, SENSITIVITIES, load, save, get, onChange, isActiveOn, learnWord, recordRecent, exportData, importData,
+  };
   root.SpellFixSettings = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
