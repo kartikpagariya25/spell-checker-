@@ -15,6 +15,15 @@
       "128": "icons/icon128.png"
     }
   },
+  "background": {
+    "service_worker": "src/background.js"
+  },
+  "commands": {
+    "toggle-enabled": {
+      "suggested_key": { "default": "Alt+Shift+S" },
+      "description": "Turn SpellFix on or off"
+    }
+  },
   "options_ui": {
     "page": "options/options.html",
     "open_in_tab": true
