@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SpellFix settings</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <main>
+    <header>
+      <img src="../icons/icon48.png" alt="" width="36" height="36">
+      <div>
+        <h1>SpellFix settings</h1>
+        <p class="sub">Changes save automatically.</p>
+      </div>
+    </header>
+
+    <section>
+      <h2>How bold should it be?</h2>
+      <fieldset id="sensitivity">
+        <label><input type="radio" name="sensitivity" value="careful"> <span><strong>Careful</strong> Only obvious one-letter slips. Fewest surprises.</span></label>
+        <label><input type="radio" name="sensitivity" value="balanced"> <span><strong>Balanced</strong> Recommended. Fixes most typos, skips ambiguous ones.</span></label>
+        <label><input type="radio" name="sensitivity" value="eager"> <span><strong>Eager</strong> Also tries harder on long, badly mangled words.</span></label>
+      </fieldset>
+    </section>
+
+    <section>
+      <h2>Behaviour</h2>
+      <label class="toggle"><input type="checkbox" id="fixOnEnter"> <span>Fix the last word when I press Enter<small>Handy for chat boxes and prompts.</small></span></label>
+      <label class="toggle"><input type="checkbox" id="showHighlight"> <span>Flash a soft highlight on fixed words<small>A glow on the field for plain inputs.</small></span></label>
+      <label class="toggle"><input type="checkbox" id="includeSearchBoxes"> <span>Also fix search boxes</span></label>
+      <label class="toggle"><input type="checkbox" id="fixCapitalizedAtSentenceStart"> <span>Fix capitalised words at the start of a sentence<small>Capitalised words mid-sentence are never touched (they're usually names).</small></span></label>
+    </section>
+
+    <section>
+      <h2>Backup</h2>
+      <p>Export the words you chose to keep, your disabled sites and your sensitivity, or restore them on another browser.</p>
+      <div class="buttons">
+        <button type="button" id="export">Export to file</button>
+        <button type="button" id="import">Import from file</button>
+        <input type="file" id="file" accept="application/json,.json" hidden>
+      </div>
+      <p id="message" role="status" aria-live="polite"></p>
+    </section>
+
+    <section>
+      <h2>Disabled sites</h2>
+      <ul id="sites"></ul>
+      <p class="sub" id="noSites">SpellFix is active everywhere.</p>
+    </section>
+  </main>
+  <script src="options.js"></script>
+</body>
+</html>
