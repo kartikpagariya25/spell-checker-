@@ -6,7 +6,7 @@
   "license": "MIT",
   "author": "Kartik Pagariya",
   "scripts": {
-    "test": "node --test test/",
+    "test": "node --test \"test/*.test.js\"",
     "build:dict": "node scripts/build-dictionary.js",
     "build:icons": "node scripts/make-icons.js",
     "pack": "node scripts/pack.js"
