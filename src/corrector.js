@@ -14,6 +14,14 @@
   const Keyboard = root.SpellFixKeyboard || require('./keyboard.js');
   const CommonTypos = root.SpellFixCommonTypos || require('./common-typos.js');
   const MEMO_LIMIT = 500;
+
+  // How bold the corrector is. "dominance" is how much more likely the best
+  // candidate must be than the runner-up; minTwoEditLength gates two-edit fixes.
+  const PROFILES = {
+    careful: { minLength: 4, dominance1: 6, dominance2: 10, minTwoEditLength: 99 },
+    balanced: { minLength: 3, dominance1: 3, dominance2: 5, minTwoEditLength: 6 },
+    eager: { minLength: 3, dominance1: 2, dominance2: 3, minTwoEditLength: 5 },
+  };
   const ALPHABET = 'abcdefghijklmnopqrstuvwxyz'.split('');
 
   // Fixes that plain edit distance either gets wrong or finds ambiguous.
@@ -53,6 +61,7 @@
    */
   function createCorrector(words, options) {
     const ignore = (options && options.ignore) || new Set();
+    const profile = PROFILES[(options && options.sensitivity) || 'balanced'] || PROFILES.balanced;
     const rank = new Map();
     for (let i = 0; i < words.length; i++) rank.set(words[i], i);
 
@@ -100,21 +109,21 @@
       if (ignore.has(word)) return null;
       if (Object.prototype.hasOwnProperty.call(OVERRIDES, word)) return OVERRIDES[word];
       if (Object.prototype.hasOwnProperty.call(CommonTypos, word)) return CommonTypos[word];
-      if (word.length < 3 || rank.has(word)) return null;
+      if (word.length < profile.minLength || rank.has(word)) return null;
 
       const e1 = edits1(word);
       const known1 = [];
       for (const c of e1) if (rank.has(c)) known1.push(c);
-      if (known1.length > 0) return pickBest(known1, word, 3);
+      if (known1.length > 0) return pickBest(known1, word, profile.dominance1);
 
-      if (word.length < 6 || word.length > 12) return null;
+      if (word.length < profile.minTwoEditLength || word.length > 12) return null;
       const known2 = new Set();
       for (const a of e1) {
         for (const b of edits1(a)) {
           if (b[0] === word[0] && rank.has(b)) known2.add(b);
         }
       }
-      return pickBest([...known2], word, 5);
+      return pickBest([...known2], word, profile.dominance2);
     }
 
     // Two-edit searches are the slow path; people repeat their typos, so remember answers.
