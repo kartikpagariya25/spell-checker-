@@ -1,0 +1,32 @@
+{
+  "fix": {
+    "teh": "the", "adn": "and", "taht": "that", "waht": "what", "jsut": "just", "yuo": "you",
+    "recieve": "receive", "becuase": "because", "wich": "which", "thier": "their", "beleive": "believe",
+    "freind": "friend", "wierd": "weird", "seperate": "separate", "definately": "definitely",
+    "wrold": "world", "helllo": "hello", "happpy": "happy", "computr": "computer", "exmaple": "example",
+    "tommorow": "tomorrow", "occured": "occurred", "untill": "until", "begining": "beginning",
+    "calender": "calendar", "collegue": "colleague", "enviroment": "environment", "goverment": "government",
+    "immediatly": "immediately", "independant": "independent", "knowlege": "knowledge", "neccessary": "necessary",
+    "occassion": "occasion", "recomend": "recommend", "refered": "referred",
+    "relevent": "relevant", "succesful": "successful", "tecnology": "technology", "truely": "truly",
+    "wensday": "Wednesday", "writting": "writing", "acommodate": "accommodate", "adress": "address",
+    "alot": "a lot", "apparantly": "apparently", "assistent": "assistant", "basicly": "basically",
+    "buisness": "business", "catagory": "category", "commited": "committed", "concious": "conscious",
+    "diffrent": "different", "dissapear": "disappear", "embarass": "embarrass", "exagerate": "exaggerate",
+    "foriegn": "foreign", "gaurd": "guard", "harrass": "harass", "hieght": "height",
+    "interupt": "interrupt", "lenght": "length", "libary": "library", "mispell": "misspell",
+    "noticable": "noticeable", "peice": "piece", "posession": "possession", "priviledge": "privilege",
+    "questionaire": "questionnaire", "rythm": "rhythm", "sieze": "seize", "speach": "speech",
+    "strenght": "strength", "suprise": "surprise", "thourough": "thorough", "tounge": "tongue",
+    "vaccum": "vacuum", "wether": "whether", "yeild": "yield", "pleae": "please", "thnaks": "thanks",
+    "mesage": "message", "emial": "email", "pasword": "password", "serach": "search", "finsih": "finish",
+    "chnage": "change", "creat": "create", "updat": "update", "delte": "delete", "dwonload": "download",
+    "wokring": "working", "importnat": "important", "probelm": "problem", "qusetion": "question",
+    "anwser": "answer", "meetign": "meeting", "schedual": "schedule"
+  },
+  "leave": [
+    "the", "hello", "world", "because", "receive", "computer", "github", "javascript", "hai", "kya",
+    "colour", "favourite", "okay", "email", "website", "kartik", "pagariya", "nodejs", "api", "json",
+    "xyzzy", "qwerty", "asdf", "lorem", "ipsum", "foo", "bar", "baz", "todo"
+  ]
+}
