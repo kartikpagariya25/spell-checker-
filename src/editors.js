@@ -20,6 +20,12 @@
 
   function isEligibleField(el) {
     if (el.disabled || el.readOnly) return false;
+    if (root.SpellFixFieldRules && root.SpellFixFieldRules.shouldSkipField({
+      autocomplete: el.getAttribute('autocomplete'),
+      inputmode: el.getAttribute('inputmode'),
+      name: el.getAttribute('name'),
+      id: el.id,
+    })) return false;
     if (el.tagName === 'TEXTAREA') return true;
     if (el.tagName !== 'INPUT') return false;
     return TEXT_INPUT_TYPES.has((el.getAttribute('type') || '').toLowerCase());
