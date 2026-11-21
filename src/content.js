@@ -26,14 +26,24 @@
     if (!corrector) {
       const ignore = new Set(Settings.get().learned);
       sessionIgnore.forEach((w) => ignore.add(w));
-      corrector = root.SpellFixCorrector.createCorrector(root.SpellFixWords, { ignore });
+      corrector = root.SpellFixCorrector.createCorrector(root.SpellFixWords, {
+        ignore,
+        sensitivity: Settings.get().sensitivity,
+      });
     }
     return corrector;
   }
 
+  let correctorKey = '';
   function refreshActive() {
+    const s = Settings.get();
     active = Settings.isActiveOn(location.hostname);
-    corrector = null; // rebuild so newly learned words are honoured
+    // Rebuild only when something the corrector depends on changed.
+    const key = s.sensitivity + '|' + s.learned.length;
+    if (key !== correctorKey) {
+      correctorKey = key;
+      corrector = null;
+    }
     if (!active) lastCorrection = null;
   }
 
@@ -49,6 +59,13 @@
 
   function targetOf(event) {
     return event.composedPath ? event.composedPath()[0] : event.target;
+  }
+
+  // Editable target for an event, honouring the "include search boxes" preference.
+  function editableFor(event) {
+    const ctx = Editors.resolve(targetOf(event));
+    if (ctx && ctx.kind === 'field' && ctx.el.type === 'search' && !Settings.get().includeSearchBoxes) return null;
+    return ctx;
   }
 
   /**
@@ -76,6 +93,7 @@
     if (kind === Text.CASE.OTHER) return false; // ALLCAPS / camelCase
 
     if (kind === Text.CASE.CAPITALIZED) {
+      if (!Settings.get().fixCapitalizedAtSentenceStart) return false;
       // A capital letter mid-sentence is probably a name; only fix at sentence starts.
       const contextBeforeWord = caret.context.slice(0, caret.context.length - (wordText.length - found.start) - delimiter.length);
       if (!Text.isSentenceStart(contextBeforeWord)) return false;
@@ -99,7 +117,7 @@
     if (!ok) return false;
 
     if (hasDelimiter) lastCorrection = { ctx, replaced, original, word: found.word.toLowerCase() };
-    Feedback.flash(ctx, replacement.length, delimiter.length);
+    if (Settings.get().showHighlight) Feedback.flash(ctx, replacement.length, delimiter.length);
     bumpCount();
     return true;
   }
@@ -132,7 +150,7 @@
       if (!busy) lastCorrection = null;
       return;
     }
-    const ctx = Editors.resolve(targetOf(event));
+    const ctx = editableFor(event);
     if (ctx) correctWordBeforeCaret(ctx, true);
   }
 
@@ -142,7 +160,7 @@
   function onKeyUp(event) {
     if (!active || busy || event.isComposing || event.key.length !== 1 || !Text.isDelimiter(event.key)) return;
     if (event.ctrlKey || event.metaKey || event.altKey) return;
-    const ctx = Editors.resolve(targetOf(event));
+    const ctx = editableFor(event);
     if (ctx) correctWordBeforeCaret(ctx, true);
   }
 
@@ -151,7 +169,7 @@
     const key = event.key;
 
     if (key === 'Backspace' && !event.ctrlKey && !event.metaKey && !event.altKey && lastCorrection) {
-      const ctx = Editors.resolve(targetOf(event));
+      const ctx = editableFor(event);
       if (ctx && undoLastCorrection(ctx)) {
         event.preventDefault();
         event.stopImmediatePropagation();
@@ -163,8 +181,8 @@
     lastCorrection = null;
 
     // Fix the last word before a chat box / form gets submitted with Enter.
-    if (key === 'Enter' && !event.ctrlKey && !event.metaKey) {
-      const ctx = Editors.resolve(targetOf(event));
+    if (key === 'Enter' && !event.ctrlKey && !event.metaKey && Settings.get().fixOnEnter) {
+      const ctx = editableFor(event);
       if (ctx) correctWordBeforeCaret(ctx, false);
     }
   }
