@@ -30,6 +30,8 @@
       "js": [
         "src/dictionary-data.js",
         "src/text-utils.js",
+        "src/keyboard.js",
+        "src/common-typos.js",
         "src/corrector.js",
         "src/settings.js",
         "src/editors.js",
