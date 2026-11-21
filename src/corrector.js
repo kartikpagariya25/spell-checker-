@@ -11,7 +11,9 @@
 (function (root) {
   'use strict';
 
-  const ALPHABET = 'abcdefghijklmnopqrstuvwxyz'.split('');
+  const Keyboard = root.SpellFixKeyboard || require('./keyboard.js');
+  const CommonTypos = root.SpellFixCommonTypos || require('./common-typos.js');
+  const ALPHABET ='abcdefghijklmnopqrstuvwxyz'.split('');
 
   // Fixes that plain edit distance either gets wrong or finds ambiguous.
   // Values are used verbatim (so contractions keep their apostrophe).
@@ -57,9 +59,27 @@
       return rank.has(word);
     }
 
+    // How likely a finger slip is to turn `candidate` into `word` (lower = likelier).
+    function slip(word, candidate) {
+      if (word.length !== candidate.length) return 1;
+      const diffs = [];
+      for (let i = 0; i < word.length && diffs.length < 3; i++) {
+        if (word[i] !== candidate[i]) diffs.push(i);
+      }
+      if (diffs.length === 1) {
+        return Keyboard.areNeighbors(word[diffs[0]], candidate[diffs[0]]) ? 0.4 : 1;
+      }
+      // Two letters typed in the wrong order ("teh", "recieve") is the classic slip.
+      if (diffs.length === 2 && diffs[1] === diffs[0] + 1 &&
+          word[diffs[0]] === candidate[diffs[1]] && word[diffs[1]] === candidate[diffs[0]]) {
+        return 0.3;
+      }
+      return 1;
+    }
+
     // Lower score = better. A wrong first letter is a much rarer typo.
     function score(candidate, word) {
-      return rank.get(candidate) * (candidate[0] === word[0] ? 1 : 4);
+      return rank.get(candidate) * (candidate[0] === word[0] ? 1 : 4) * slip(word, candidate);
     }
 
     // Returns the single winning candidate, or null when it's ambiguous.
@@ -78,6 +98,7 @@
     function correct(word) {
       if (ignore.has(word)) return null;
       if (Object.prototype.hasOwnProperty.call(OVERRIDES, word)) return OVERRIDES[word];
+      if (Object.prototype.hasOwnProperty.call(CommonTypos, word)) return CommonTypos[word];
       if (word.length < 3 || rank.has(word)) return null;
 
       const e1 = edits1(word);
