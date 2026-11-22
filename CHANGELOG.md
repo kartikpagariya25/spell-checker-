@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.3.1
+
+### Fixed
+- SpellFix now works in tabs that were open before it was installed, updated
+  or reloaded: it injects itself into them automatically.
+- Listeners attach the instant a page loads instead of after settings are read,
+  so the first words typed in a new tab are no longer missed.
+- Old copies of the script left behind by an extension reload now stand down
+  instead of fighting the new copy.
+- Frames created from `about:blank`, `srcdoc` and `blob:` pages are covered.
+
+### Added
+- The popup tells you when SpellFix can't run on a page (new tab page, browser
+  settings, built-in side panels such as Gemini, extension stores) and offers
+  **Activate on this tab** when a normal page was missed.
+
 ## 0.3.0
 
 ### Added
