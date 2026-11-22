@@ -70,16 +70,53 @@
   $('clearLearned').addEventListener('click', () => save({ learned: [] }));
   $('openOptions').addEventListener('click', () => chrome.runtime.openOptionsPage());
 
+  // --- Is SpellFix actually running in the tab the user is looking at? ---------
+
+  function showStatus(text, canActivate, good) {
+    $('statusText').textContent = text;
+    $('activate').hidden = !canActivate;
+    $('pageStatus').classList.toggle('ok', !!good);
+    $('pageStatus').hidden = false;
+  }
+
+  function checkPage(tab) {
+    const page = SpellFixPageSupport.classifyUrl(tab && tab.url);
+    if (page.kind !== 'web') return showStatus(SpellFixPageSupport.explainUnsupported(page.kind), false);
+    chrome.tabs.sendMessage(tab.id, { type: 'spellfix-ping' }, (response) => {
+      if (chrome.runtime.lastError || !response) {
+        showStatus(
+          "SpellFix isn't running in this tab yet. This happens to tabs opened before it was installed or reloaded.",
+          true
+        );
+      } else {
+        $('pageStatus').hidden = true;
+      }
+    });
+  }
+
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    try {
-      const url = new URL(tabs[0].url);
-      if (/^https?:$/.test(url.protocol)) hostname = url.hostname;
-    } catch (e) {
-      /* chrome:// pages and the like have no usable URL */
-    }
+    const tab = tabs && tabs[0];
+    const page = SpellFixPageSupport.classifyUrl(tab && tab.url);
+    if (page.kind === 'web') hostname = page.hostname;
     chrome.storage.local.get(DEFAULTS, (items) => {
       state = Object.assign({}, DEFAULTS, items);
       render();
+    });
+    checkPage(tab);
+
+    $('activate').addEventListener('click', () => {
+      $('activate').disabled = true;
+      chrome.runtime.sendMessage({ type: 'spellfix-inject', tabId: tab.id }, () => {
+        void chrome.runtime.lastError;
+        $('activate').disabled = false;
+        // Re-check: a short delay lets the freshly injected script start listening.
+        setTimeout(() => {
+          chrome.tabs.sendMessage(tab.id, { type: 'spellfix-ping' }, (response) => {
+            if (chrome.runtime.lastError || !response) showStatus('Could not activate SpellFix here. Try reloading the tab.', true);
+            else showStatus('SpellFix is now active in this tab.', false, true);
+          });
+        }, 250);
+      });
     });
   });
 })();
