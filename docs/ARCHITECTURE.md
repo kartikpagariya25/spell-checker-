@@ -31,6 +31,24 @@ keystroke ──► content.js ──► text-utils ──► corrector ──�
 7. **Feedback** (`feedback.js`). CSS Custom Highlight on rich editors, a brief
    glow on plain fields.
 
+## Optional steps in the pipeline
+
+- **Context fixes** (`context-fixes.js`, off by default). Before the dictionary
+  runs, the previous word is checked: modal + "of" becomes "have", an
+  accidentally repeated word is removed (an empty replacement becomes a delete).
+- **Lone "i"** is capitalised when the preference is on.
+- **Browser undo.** `undoWatch` remembers the last fix for 15 seconds; an
+  `input` event of type `historyUndo` that brings the original spelling back
+  teaches SpellFix to leave that word alone.
+- **Counters** (`stats.js`) are flushed together with the recent-fixes list every
+  five seconds to avoid hammering storage.
+
+## Background worker (`background.js`)
+
+Badge, `Alt+Shift+S`, right-click menu, optional sync of kept words
+(`word-merge.js`), and the first-run page. In Chrome it is a service worker; the
+Firefox build (`scripts/firefox-manifest.js`) lists it as an event page.
+
 ## Data
 
 | File | Purpose |
