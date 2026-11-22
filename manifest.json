@@ -47,6 +47,8 @@
         "src/common-typos.js",
         "src/corrector.js",
         "src/settings.js",
+        "src/stats.js",
+        "src/context-fixes.js",
         "src/field-rules.js",
         "src/editors.js",
         "src/feedback.js",
