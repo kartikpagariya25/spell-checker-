@@ -7,7 +7,7 @@ const chrome = require('../manifest.json');
 test('background becomes an event page that loads word-merge first', () => {
   const ff = toFirefoxManifest(chrome);
   assert.equal(ff.background.service_worker, undefined);
-  assert.deepEqual(ff.background.scripts, ['src/word-merge.js', 'src/background.js']);
+  assert.deepEqual(ff.background.scripts, ['src/word-merge.js', 'src/page-support.js', 'src/background.js']);
 });
 
 test('adds a gecko id and minimum version', () => {
