@@ -17,10 +17,10 @@ jobs:
         run: npm run check
       - name: Unit tests
         run: npm test
-      - name: Pack extension
-        run: node scripts/pack.js
-      - name: Upload packed extension
+      - name: Pack extension (Chrome and Firefox) and build upload zips
+        run: node scripts/pack.js --zip
+      - name: Upload packages
         uses: actions/upload-artifact@v4
         with:
-          name: spellfix-extension
-          path: dist/spellfix
+          name: spellfix-packages
+          path: dist/*.zip
