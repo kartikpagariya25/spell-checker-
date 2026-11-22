@@ -10,6 +10,7 @@
     "build:dict": "node scripts/build-dictionary.js",
     "build:icons": "node scripts/make-icons.js",
     "check": "node scripts/check.js",
-    "pack": "node scripts/check.js && node scripts/pack.js"
+    "pack": "node scripts/check.js && node scripts/pack.js",
+    "zip": "node scripts/check.js && node scripts/pack.js --zip"
   }
 }
