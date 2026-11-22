@@ -43,6 +43,19 @@ keystroke ──► content.js ──► text-utils ──► corrector ──�
 - **Counters** (`stats.js`) are flushed together with the recent-fixes list every
   five seconds to avoid hammering storage.
 
+## Staying alive across tabs
+
+- `start()` attaches all listeners synchronously and loads settings afterwards.
+- `__spellFixLoaded` prevents double loading when the manifest and an on-demand
+  injection both run in the same page.
+- Every handler checks `chrome.runtime.id`; when the extension is reloaded the
+  orphaned copy removes its listeners and a new copy can start.
+- The script answers `spellfix-ping`; the background (`ensureInjected`) and the
+  popup use it to find tabs where SpellFix isn't running and inject it with
+  `chrome.scripting.executeScript`.
+- `page-support.js` classifies URLs so the popup can explain pages that browsers
+  never allow extensions on.
+
 ## Background worker (`background.js`)
 
 Badge, `Alt+Shift+S`, right-click menu, optional sync of kept words
