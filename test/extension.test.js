@@ -29,6 +29,17 @@ test('referencedByManifest lists icons and pages', () => {
   assert.ok(files.includes('src/background.js'));
 });
 
+test('manifest can reach every page and repair already-open tabs', () => {
+  const manifest = require('../manifest.json');
+  assert.ok(manifest.permissions.includes('scripting'));
+  assert.deepEqual(manifest.host_permissions, ['<all_urls>']);
+  const cs = manifest.content_scripts[0];
+  assert.deepEqual(cs.matches, ['<all_urls>']);
+  assert.equal(cs.all_frames, true);
+  assert.equal(cs.match_about_blank, true);
+  assert.equal(cs.match_origin_as_fallback, true);
+});
+
 test('check reports problems for a broken manifest', () => {
   const fs = require('fs');
   const os = require('os');
