@@ -99,6 +99,22 @@ The dictionary is derived from the public word-frequency list in
 [SymSpell](https://github.com/wolfgarbe/SymSpell) (`en-80k.txt`), filtered to
 plain lowercase words with a curated list of short words.
 
+## Where it can't run (browser limits)
+
+Browsers refuse to run extensions on some pages, whatever the extension does:
+
+- the **New Tab page**, `chrome://` pages and settings
+- the browser's **built-in side panels** (for example Chrome's *Ask Gemini* panel)
+- the **extension stores** (Chrome Web Store, Edge Add-ons, Firefox Add-ons)
+- the PDF viewer, `view-source:` and DevTools
+
+On those pages the popup says so. Use the same tool on a normal website tab
+instead (for example gemini.google.com rather than the side panel).
+
+Tabs that were already open when SpellFix was installed or reloaded are fixed
+automatically: SpellFix injects itself into them, and the popup has an
+**Activate on this tab** button if one is ever missed.
+
 ## Known limitations
 
 - English (US) only for now.
