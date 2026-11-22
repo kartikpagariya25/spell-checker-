@@ -27,7 +27,12 @@ again.
 - Ranks fixes by how fingers actually slip (neighbouring keys, swapped letters).
 - Settings page: sensitivity (careful / balanced / eager), Enter-to-fix,
   highlight, backup/restore of kept words. `Alt+Shift+S` toggles SpellFix.
-- The popup lists your recent fixes so nothing changes behind your back.
+- The popup lists your recent fixes and how many you got this week.
+- Ctrl+Z after a fix also counts as "keep my spelling" and is remembered.
+- Right-click a selected word: "never fix this word"; right-click a page: turn
+  SpellFix off or on for the site.
+- Opt-in extras: "could of" -> "could have", doubled words ("the the"),
+  lone "i" -> "I", a small `teh -> the` hint bubble, sync of kept words.
 
 ### Never touched
 
@@ -44,6 +49,14 @@ middle of a sentence (probably names).
 
 Click the toolbar icon to switch SpellFix on/off globally or for the current
 site, and to review or forget the words you chose to keep.
+
+**Firefox:** `npm run pack` also writes `dist/spellfix-firefox`. Open
+`about:debugging#/runtime/this-firefox`, choose **Load Temporary Add-on** and
+pick its `manifest.json`. (The Firefox build has not been tested on real sites yet.)
+
+**Publishing:** `npm run zip` creates `dist/spellfix-<version>.zip` (Chrome Web
+Store) and `dist/spellfix-firefox-<version>.zip`; listing text is in
+[docs/STORE_LISTING.md](docs/STORE_LISTING.md).
 
 ## How it works
 
