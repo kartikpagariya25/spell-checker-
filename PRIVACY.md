@@ -14,7 +14,14 @@ SpellFix is built to be boring about your data.
   anywhere you type. It never reads password, email, number, URL, name or address
   fields, and ignores code editors.
 - **Permissions.** `storage` keeps your settings; `activeTab` lets the popup
-  read the current tab's hostname so you can disable SpellFix for that site.
+  read the current tab's hostname so you can disable SpellFix for that site;
+  `contextMenus` adds the right-click entries "never fix this word" and
+  "turn off for this site".
+- **Optional sync.** If you switch on "Sync kept words", only the list of words
+  you chose to keep is stored in your browser's own sync storage (Chrome /
+  Firefox account sync). It is off by default and never includes what you type.
+- **Daily counts.** The popup's "fixed this week" uses a per-day counter kept
+  for about a month; it holds numbers only, no text.
 - **Your control.** Clear the learned words and recent fixes from the popup, or
   remove the extension to delete everything it stored.
 
