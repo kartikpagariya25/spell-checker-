@@ -27,7 +27,7 @@ test('a typical typo is corrected in well under a frame', () => {
 test('worst case two-edit search on a long word stays interactive', () => {
   const c = createCorrector(words, { sensitivity: 'eager' });
   const { ms } = time(() => c.correct('comunicatoin'));
-  assert.ok(ms < 300, `took ${ms.toFixed(1)}ms`);
+  assert.ok(ms < 100, `took ${ms.toFixed(1)}ms`);
 });
 
 test('a mostly-correct sentence costs almost nothing', () => {
