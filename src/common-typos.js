@@ -47,6 +47,9 @@
     millenium: 'millennium', mischievious: 'mischievous', ocurred: 'occurred', paralell: 'parallel',
     paticular: 'particular', particulary: 'particularly', prefered: 'preferred', pronounciation: 'pronunciation',
     remeber: 'remember', rember: 'remember', secratary: 'secretary', tatoo: 'tattoo', tommorows: 'tomorrow\'s',
+    competion: 'competition', personel: 'personnel', politican: 'politician', bizzare: 'bizarre',
+    embarasing: 'embarrassing', incidently: 'incidentally', occurance: 'occurrence', playwrite: 'playwright',
+    tomatos: 'tomatoes', tyrany: 'tyranny',
   };
 
   // Case-insensitive lookups are done on lowercase keys; weekday/month fixes
