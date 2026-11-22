@@ -56,6 +56,33 @@
   }
 
   /**
+   * Optimal-string-alignment distance (insert, delete, substitute, swap
+   * neighbours) between `a` and `b`, or max + 1 as soon as it must exceed `max`.
+   */
+  function boundedDistance(a, b, max) {
+    const n = a.length;
+    const m = b.length;
+    if (Math.abs(n - m) > max) return max + 1;
+    let prev2 = null;
+    let prev = Array.from({ length: m + 1 }, (_, j) => j);
+    for (let i = 1; i <= n; i++) {
+      const row = [i];
+      let rowMin = i;
+      for (let j = 1; j <= m; j++) {
+        const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+        let d = Math.min(prev[j] + 1, row[j - 1] + 1, prev[j - 1] + cost);
+        if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) d = Math.min(d, prev2[j - 2] + 1);
+        row.push(d);
+        if (d < rowMin) rowMin = d;
+      }
+      if (rowMin > max) return max + 1;
+      prev2 = prev;
+      prev = row;
+    }
+    return prev[m];
+  }
+
+  /**
    * @param {string[]} words dictionary, most frequent first
    * @param {{ignore?: Set<string>}} [options]
    */
@@ -63,7 +90,17 @@
     const ignore = (options && options.ignore) || new Set();
     const profile = PROFILES[(options && options.sensitivity) || 'balanced'] || PROFILES.balanced;
     const rank = new Map();
-    for (let i = 0; i < words.length; i++) rank.set(words[i], i);
+    // Words grouped by first letter + length: the two-edit search only needs
+    // to look at a couple of thousand words instead of generating ~400k strings.
+    const buckets = new Map();
+    for (let i = 0; i < words.length; i++) {
+      const w = words[i];
+      rank.set(w, i);
+      const key = w[0] + w.length;
+      const list = buckets.get(key);
+      if (list) list.push(w);
+      else buckets.set(key, [w]);
+    }
 
     function isKnown(word) {
       return rank.has(word);
@@ -117,13 +154,15 @@
       if (known1.length > 0) return pickBest(known1, word, profile.dominance1);
 
       if (word.length < profile.minTwoEditLength || word.length > 12) return null;
-      const known2 = new Set();
-      for (const a of e1) {
-        for (const b of edits1(a)) {
-          if (b[0] === word[0] && rank.has(b)) known2.add(b);
+      const known2 = [];
+      for (let len = word.length - 2; len <= word.length + 2; len++) {
+        const bucket = buckets.get(word[0] + len);
+        if (!bucket) continue;
+        for (const candidate of bucket) {
+          if (boundedDistance(word, candidate, 2) <= 2) known2.push(candidate);
         }
       }
-      return pickBest([...known2], word, profile.dominance2);
+      return pickBest(known2, word, profile.dominance2);
     }
 
     // Two-edit searches are the slow path; people repeat their typos, so remember answers.
@@ -145,7 +184,7 @@
     return { correct, isKnown, edits1, memoSize: () => memo.size };
   }
 
-  const api = { createCorrector, edits1, OVERRIDES };
+  const api = { createCorrector, edits1, boundedDistance, OVERRIDES };
   root.SpellFixCorrector = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
