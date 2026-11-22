@@ -2,13 +2,14 @@
   'use strict';
 
   const $ = (id) => document.getElementById(id);
-  const DEFAULTS = { enabled: true, disabledHosts: [], learned: [], correctionCount: 0, recent: [] };
+  const DEFAULTS = { enabled: true, disabledHosts: [], learned: [], correctionCount: 0, recent: [], dailyCounts: {} };
   let hostname = null;
   let state = Object.assign({}, DEFAULTS);
 
   function render() {
     $('enabled').checked = state.enabled;
     $('count').textContent = state.correctionCount.toLocaleString();
+    $('week').textContent = SpellFixStats.weekTotal(state.dailyCounts, Date.now()).toLocaleString();
 
     const siteRow = $('siteRow');
     if (hostname) {

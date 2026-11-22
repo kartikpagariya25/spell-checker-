@@ -28,7 +28,7 @@
     <input type="checkbox" id="siteEnabled" role="switch">
   </label>
 
-  <p class="stat"><span id="count">0</span> words fixed so far</p>
+  <p class="stat"><strong id="week">0</strong> fixed this week &middot; <span id="count">0</span> in total</p>
 
   <details id="recentBox">
     <summary>Recently fixed</summary>
@@ -46,6 +46,7 @@
   <p class="hint">Tip: after a fix, press <kbd>Backspace</kbd> to keep what you typed.</p>
   <p class="footer"><button type="button" id="openOptions" class="link">Settings</button></p>
 
+  <script src="../src/stats.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>
