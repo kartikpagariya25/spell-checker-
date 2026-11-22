@@ -25,6 +25,13 @@ test('wordBeforeCaret ignores code-like and structured tokens', () => {
   assert.equal(T.wordBeforeCaret('hello '), null);
 });
 
+test('chat syntax is never treated as a word to fix', () => {
+  // :emoji shortcodes, @mentions, #channels, /slash-commands and !bang commands
+  for (const s of [':smle', '@kartk', '#genral', '/remnd', '!hepl', 'hello :smle', 'hi @kartk', 'use /remnd']) {
+    assert.equal(T.wordBeforeCaret(s), null, s);
+  }
+});
+
 test('isSentenceStart', () => {
   assert.equal(T.isSentenceStart(''), true);
   assert.equal(T.isSentenceStart('   '), true);
