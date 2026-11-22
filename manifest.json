@@ -4,7 +4,7 @@
   "version": "0.2.0",
   "description": "Silently fixes spelling mistakes as you type, on any website. Press Backspace right after a fix to keep your original spelling.",
   "author": "Kartik Pagariya",
-  "permissions": ["storage", "activeTab"],
+  "permissions": ["storage", "activeTab", "contextMenus"],
   "action": {
     "default_title": "SpellFix",
     "default_popup": "popup/popup.html",
