@@ -5,7 +5,9 @@
  */
 'use strict';
 
-importScripts('word-merge.js');
+// Chrome loads this as a service worker (importScripts); Firefox as an event
+// page whose manifest already lists word-merge.js before this file.
+if (typeof importScripts === 'function') importScripts('word-merge.js');
 const WordMerge = self.SpellFixWordMerge;
 
 // --- Toolbar badge -------------------------------------------------------
