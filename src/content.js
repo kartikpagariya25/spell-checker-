@@ -253,16 +253,61 @@
     lastCorrection = null;
   }
 
+  // After the extension is reloaded or updated, scripts already running in open
+  // tabs lose their connection ("extension context invalidated"). Detect that
+  // and stand down so a fresh copy can take over without double handling.
+  function extensionAlive() {
+    try {
+      return typeof chrome === 'undefined' || !chrome.runtime || !!chrome.runtime.id;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  const listeners = [];
+  function listen(type, handler) {
+    const guarded = (event) => {
+      if (!extensionAlive()) return teardown();
+      return handler(event);
+    };
+    listeners.push([type, guarded]);
+    document.addEventListener(type, guarded, true);
+  }
+
+  function teardown() {
+    for (const [type, fn] of listeners) document.removeEventListener(type, fn, true);
+    listeners.length = 0;
+    root.__spellFixLoaded = false;
+  }
+
   function start() {
+    // Never load twice into the same page (manifest injection + on-demand injection).
+    if (root.__spellFixLoaded) return;
+    root.__spellFixLoaded = true;
+
+    // Listen straight away so the first words typed in a fresh tab are never missed;
+    // settings arrive a moment later and simply refine the defaults.
+    listen('input', onInput);
+    listen('keydown', onKeyDown);
+    listen('keyup', onKeyUp);
+    listen('pointerdown', clearUndo);
+    listen('focusout', clearUndo);
+
     Settings.load(() => {
       refreshActive();
       Settings.onChange(refreshActive);
-      document.addEventListener('input', onInput, true);
-      document.addEventListener('keydown', onKeyDown, true);
-      document.addEventListener('keyup', onKeyUp, true);
-      document.addEventListener('pointerdown', clearUndo, true);
-      document.addEventListener('focusout', clearUndo, true);
     });
+
+    // Lets the popup / background ask "are you running in this tab?".
+    try {
+      if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.onMessage) {
+        chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+          if (message && message.type === 'spellfix-ping') sendResponse({ ok: true, active, host: location.hostname });
+        });
+      }
+    } catch (e) {
+      /* messaging is optional */
+    }
   }
 
   start();
