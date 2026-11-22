@@ -18,6 +18,11 @@
     includeSearchBoxes: true,
     fixCapitalizedAtSentenceStart: true,
     recent: [], // last few corrections: { from, to, host, at }
+    dailyCounts: {}, // YYYY-MM-DD -> corrections that day (see stats.js)
+    contextFixes: false, // opt-in: "could of" -> "could have", "the the" -> "the"
+    capitalizeI: false, // opt-in: lone "i" -> "I"
+    showHint: false, // opt-in: small "teh -> the" tooltip next to the field
+    syncWords: false, // opt-in: sync kept words through the browser account
   };
   const MAX_RECENT = 10;
   const MAX_LEARNED = 1000;
