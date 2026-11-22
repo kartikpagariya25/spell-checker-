@@ -39,6 +39,7 @@ Productivity
 | Content script on all sites | Typos can happen in any text box, so the script must run wherever you type. It only reads the word you just finished and only inside editable fields. |
 | `storage` | Saves your settings, kept words and counters on your device (and, if you opt in, in your browser's own sync storage). |
 | `activeTab` | Lets the popup read the current site's hostname for the per-site on/off switch. |
+| Host access (`<all_urls>`) and `scripting` | Lets SpellFix start working in tabs that were already open when it was installed or updated, and lets the popup's "Activate on this tab" button repair a tab. It injects only SpellFix's own bundled scripts; no remote code. |
 | `contextMenus` | Adds "never fix this word" and "turn off for this site" to the right-click menu. |
 
 ## Single purpose statement
