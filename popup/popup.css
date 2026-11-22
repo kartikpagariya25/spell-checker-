@@ -55,6 +55,11 @@ input[role="switch"]::after {
 input[role="switch"]:checked { background: var(--accent); }
 input[role="switch"]:checked::after { transform: translateX(16px); }
 input[role="switch"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.status { margin: 0 0 10px; padding: 10px 12px; border-radius: 10px; background: rgba(245, 158, 11, 0.14); border: 1px solid rgba(245, 158, 11, 0.45); }
+.status p { margin: 0; font-size: 12.5px; }
+.status.ok { background: rgba(34, 197, 94, 0.12); border-color: rgba(34, 197, 94, 0.4); }
+.status button { margin-top: 8px; font: inherit; padding: 6px 12px; border-radius: 8px; border: 0; background: var(--accent); color: #fff; cursor: pointer; }
+.status button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .stat { margin: 8px 0; color: var(--muted); }
 details { border-top: 1px solid var(--line); padding-top: 8px; }
 summary { cursor: pointer; color: var(--muted); }
