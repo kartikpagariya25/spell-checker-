@@ -13,11 +13,14 @@
   const Editors = root.SpellFixEditors;
   const Settings = root.SpellFixSettings;
   const Feedback = root.SpellFixFeedback;
+  const ContextFixes = root.SpellFixContextFixes;
+  const Stats = root.SpellFixStats;
 
   let corrector = null;
   let busy = false; // true while we are editing, so we ignore our own events
   let active = true;
   let lastCorrection = null; // { ctx, replaced, original, word } - what Backspace can undo
+  let undoWatch = null; // { ctx, original, word, until } - detects Ctrl+Z after a fix
   let pendingCount = 0;
   let countTimer = null;
   const sessionIgnore = new Set();
@@ -60,7 +63,11 @@
     countTimer = setTimeout(() => {
       countTimer = null;
       const recent = pendingRecent.concat(Settings.get().recent).slice(0, 10);
-      Settings.save({ correctionCount: Settings.get().correctionCount + pendingCount, recent });
+      Settings.save({
+        correctionCount: Settings.get().correctionCount + pendingCount,
+        dailyCounts: Stats.addCount(Settings.get().dailyCounts, pendingCount, Date.now()),
+        recent,
+      });
       pendingCount = 0;
       pendingRecent = [];
     }, 5000);
@@ -96,24 +103,45 @@
     }
 
     const found = Text.wordBeforeCaret(wordText);
-    if (!found || found.word.length < 3) return false;
+    if (!found) return false;
 
-    const kind = Text.caseOf(found.word);
-    if (kind === Text.CASE.OTHER) return false; // ALLCAPS / camelCase
+    const prefs = Settings.get();
+    const contextBeforeWord = caret.context.slice(0, caret.context.length - (wordText.length - found.start) - delimiter.length);
 
-    if (kind === Text.CASE.CAPITALIZED) {
-      if (!Settings.get().fixCapitalizedAtSentenceStart) return false;
-      // A capital letter mid-sentence is probably a name; only fix at sentence starts.
-      const contextBeforeWord = caret.context.slice(0, caret.context.length - (wordText.length - found.start) - delimiter.length);
-      if (!Text.isSentenceStart(contextBeforeWord)) return false;
+    // Opt-in fixes that need neighbouring words or a single letter.
+    let fix = null;
+    let dropWord = false;
+    if (prefs.contextFixes && hasDelimiter) {
+      const ctxFix = ContextFixes.contextFix(ContextFixes.previousWord(contextBeforeWord), found.word);
+      if (ctxFix !== null) {
+        fix = ctxFix;
+        dropWord = ctxFix === '';
+      }
+    }
+    if (fix === null && prefs.capitalizeI && found.word === 'i') {
+      fix = 'I';
     }
 
-    const fix = getCorrector().correct(found.word.toLowerCase());
-    if (!fix) return false;
+    if (fix === null) {
+      if (found.word.length < 3) return false;
 
-    const replacement = Text.applyCase(found.word, fix);
+      const kind = Text.caseOf(found.word);
+      if (kind === Text.CASE.OTHER) return false; // ALLCAPS / camelCase
+
+      if (kind === Text.CASE.CAPITALIZED) {
+        if (!prefs.fixCapitalizedAtSentenceStart) return false;
+        // A capital letter mid-sentence is probably a name; only fix at sentence starts.
+        if (!Text.isSentenceStart(contextBeforeWord)) return false;
+      }
+
+      fix = getCorrector().correct(found.word.toLowerCase());
+      if (!fix) return false;
+    }
+
+    const replacement = dropWord || fix === 'have' || fix === 'I' ? fix : Text.applyCase(found.word, fix);
     const original = found.word + delimiter;
-    const replaced = replacement + delimiter;
+    // Dropping a doubled word removes the word *and* its delimiter; everything else keeps the delimiter.
+    const replaced = dropWord ? '' : replacement + delimiter;
     const charsToReplace = caret.before.length - found.start;
 
     busy = true;
@@ -125,9 +153,14 @@
     }
     if (!ok) return false;
 
-    if (hasDelimiter) lastCorrection = { ctx, replaced, original, word: found.word.toLowerCase() };
+    if (hasDelimiter) {
+      lastCorrection = { ctx, replaced, original, word: found.word.toLowerCase() };
+      // Keep watching for a browser Undo (Ctrl+Z) a little longer than Backspace allows.
+      undoWatch = { ctx, original, replaced, word: found.word.toLowerCase(), until: Date.now() + 15000 };
+    }
     recordRecent(found.word, replacement);
-    if (Settings.get().showHighlight) Feedback.flash(ctx, replacement.length, delimiter.length);
+    if (prefs.showHighlight && replacement !== '') Feedback.flash(ctx, replacement.length, delimiter.length);
+    if (prefs.showHint) Feedback.hint(ctx, found.word, replacement);
     bumpCount();
     return true;
   }
@@ -154,7 +187,26 @@
     return ok;
   }
 
+  // If the user presses Ctrl+Z right after a fix and the browser restores the
+  // original spelling, that is as clear a "keep my spelling" as Backspace.
+  function learnFromBrowserUndo(event) {
+    const watch = undoWatch;
+    if (!watch || Date.now() > watch.until) return;
+    const ctx = editableFor(event);
+    if (!ctx || ctx.el !== watch.ctx.el) return;
+    // After a browser undo the caret can jump to the start, so compare the whole
+    // text: the original spelling is back and the corrected form is gone.
+    const text = Editors.fieldText(ctx);
+    if (!watch.replaced || !text.includes(watch.original) || text.includes(watch.replaced)) return;
+    undoWatch = null;
+    lastCorrection = null;
+    sessionIgnore.add(watch.word);
+    Settings.learnWord(watch.word);
+    corrector = null;
+  }
+
   function onInput(event) {
+    if (event.inputType === 'historyUndo' && !busy) return learnFromBrowserUndo(event);
     if (!active || busy || event.isComposing) return;
     if (event.inputType !== 'insertText' || !Text.isDelimiter(event.data)) {
       if (!busy) lastCorrection = null;
