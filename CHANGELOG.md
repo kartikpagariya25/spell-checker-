@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.3.0
+
+### Added
+- Opt-in context fixes: "could of" -> "could have", doubled words, lone "i" -> "I".
+- Optional hint bubble (`teh -> the`) after each fix.
+- Ctrl+Z after a fix is treated like Backspace and the word is remembered.
+- Right-click menu: "never fix this word" and "turn off / on for this site".
+- Optional sync of kept words through the browser account.
+- "Fixed this week" counter in the popup.
+- Firefox build (`dist/spellfix-firefox`) and upload-ready zips (`npm run zip`).
+- Store listing text with permission justifications.
+
+### Improved
+- 79-word second typo corpus, performance budgets, chat-syntax guard tests.
+- Ten more frequent misspellings handled explicitly.
+
+### Tooling
+- Dependency-free ZIP writer; CI now builds both store packages.
+
 ## 0.2.0
 
 ### Added
