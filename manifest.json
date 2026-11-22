@@ -1,10 +1,11 @@
 {
   "manifest_version": 3,
   "name": "SpellFix - Silent Auto-Correct",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Silently fixes spelling mistakes as you type, on any website. Press Backspace right after a fix to keep your original spelling.",
   "author": "Kartik Pagariya",
-  "permissions": ["storage", "activeTab", "contextMenus"],
+  "permissions": ["storage", "activeTab", "contextMenus", "scripting"],
+  "host_permissions": ["<all_urls>"],
   "action": {
     "default_title": "SpellFix",
     "default_popup": "popup/popup.html",
@@ -39,6 +40,7 @@
       "matches": ["<all_urls>"],
       "all_frames": true,
       "match_about_blank": true,
+      "match_origin_as_fallback": true,
       "run_at": "document_idle",
       "js": [
         "src/dictionary-data.js",
