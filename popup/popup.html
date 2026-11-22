@@ -12,6 +12,11 @@
     <h1>SpellFix</h1>
   </header>
 
+  <section id="pageStatus" class="status" role="status" aria-live="polite" hidden>
+    <p id="statusText"></p>
+    <button type="button" id="activate" hidden>Activate on this tab</button>
+  </section>
+
   <label class="row">
     <span>
       <strong>Auto-correct</strong>
@@ -47,6 +52,7 @@
   <p class="footer"><button type="button" id="openOptions" class="link">Settings</button></p>
 
   <script src="../src/stats.js"></script>
+  <script src="../src/page-support.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>
