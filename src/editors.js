@@ -137,7 +137,12 @@
     return insertViaExecCommand(text);
   }
 
-  const api = { resolve, getCaretContext, replaceBeforeCaret, selectionFor, richCaret };
+  /** Whole text of the field, regardless of where the caret is. */
+  function fieldText(ctx) {
+    return ctx.kind === 'field' ? ctx.el.value : ctx.el.textContent || '';
+  }
+
+  const api = { resolve, getCaretContext, replaceBeforeCaret, selectionFor, richCaret, fieldText };
   root.SpellFixEditors = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
