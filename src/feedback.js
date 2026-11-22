@@ -43,6 +43,55 @@
     }
   }
 
+  let hintEl = null;
+  let hintTimer = null;
+
+  // Where to anchor the tooltip: under the caret in rich editors, under the field otherwise.
+  function anchorRect(ctx) {
+    if (ctx.kind === 'rich') {
+      const caret = root.SpellFixEditors.richCaret(ctx);
+      if (caret) {
+        try {
+          const range = document.createRange();
+          range.setStart(caret.node, caret.offset);
+          range.collapse(true);
+          const rect = range.getBoundingClientRect();
+          if (rect && (rect.width || rect.height)) return rect;
+        } catch (e) {
+          /* fall through to the element's box */
+        }
+      }
+    }
+    return ctx.el.getBoundingClientRect();
+  }
+
+  /** Tiny "teh -> the" bubble that fades by itself. Purely cosmetic and click-through. */
+  function hint(ctx, from, to) {
+    try {
+      const rect = anchorRect(ctx);
+      if (!hintEl) {
+        hintEl = document.createElement('div');
+        hintEl.setAttribute('aria-hidden', 'true');
+        hintEl.style.cssText =
+          'all:initial;position:fixed;z-index:2147483647;pointer-events:none;padding:3px 8px;' +
+          'border-radius:6px;background:#111827;color:#fff;font:12px/1.4 system-ui,sans-serif;' +
+          'box-shadow:0 2px 8px rgba(0,0,0,.25);transition:opacity .2s;white-space:nowrap';
+      }
+      hintEl.textContent = from + ' → ' + (to === '' ? '(removed)' : to);
+      hintEl.style.left = Math.max(4, Math.min(rect.left, window.innerWidth - 160)) + 'px';
+      hintEl.style.top = Math.min(rect.bottom + 4, window.innerHeight - 28) + 'px';
+      hintEl.style.opacity = '1';
+      if (!hintEl.isConnected) document.documentElement.appendChild(hintEl);
+      clearTimeout(hintTimer);
+      hintTimer = setTimeout(() => {
+        hintEl.style.opacity = '0';
+        setTimeout(() => hintEl && hintEl.remove(), 250);
+      }, 1400);
+    } catch (e) {
+      /* cosmetic only */
+    }
+  }
+
   /**
    * @param {object} ctx editor context from SpellFixEditors.resolve
    * @param {number} wordLength length of the corrected word
@@ -53,7 +102,7 @@
     else highlightWord(ctx, wordLength, trailing);
   }
 
-  const api = { flash };
+  const api = { flash, hint };
   root.SpellFixFeedback = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
