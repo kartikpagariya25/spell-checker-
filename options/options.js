@@ -6,8 +6,12 @@
     enabled: true, disabledHosts: [], learned: [], correctionCount: 0,
     sensitivity: 'balanced', fixOnEnter: true, showHighlight: true,
     includeSearchBoxes: true, fixCapitalizedAtSentenceStart: true,
+    contextFixes: false, capitalizeI: false, showHint: false, syncWords: false,
   };
-  const TOGGLES = ['fixOnEnter', 'showHighlight', 'includeSearchBoxes', 'fixCapitalizedAtSentenceStart'];
+  const TOGGLES = [
+    'fixOnEnter', 'showHighlight', 'includeSearchBoxes', 'fixCapitalizedAtSentenceStart',
+    'contextFixes', 'capitalizeI', 'showHint', 'syncWords',
+  ];
   let state = Object.assign({}, DEFAULTS);
 
   function say(text, isError) {
