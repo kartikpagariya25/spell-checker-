@@ -7,8 +7,55 @@
 
 // Chrome loads this as a service worker (importScripts); Firefox as an event
 // page whose manifest already lists word-merge.js before this file.
-if (typeof importScripts === 'function') importScripts('word-merge.js');
+if (typeof importScripts === 'function') importScripts('word-merge.js', 'page-support.js');
 const WordMerge = self.SpellFixWordMerge;
+const PageSupport = self.SpellFixPageSupport;
+
+// --- Making sure the content script is running in a tab -------------------
+//
+// Chrome only injects content scripts into pages loaded *after* the extension
+// was installed or reloaded. These helpers add them to tabs that are already
+// open, and let the popup repair a single tab on demand.
+
+function contentFiles() {
+  const entry = chrome.runtime.getManifest().content_scripts[0];
+  return { js: entry.js, css: entry.css || [] };
+}
+
+function injectInto(tabId) {
+  const files = contentFiles();
+  return chrome.scripting
+    .executeScript({ target: { tabId, allFrames: true }, files: files.js })
+    .then(() => (files.css.length ? chrome.scripting.insertCSS({ target: { tabId, allFrames: true }, files: files.css }) : null))
+    .then(() => true)
+    .catch(() => false); // restricted tab, closed tab, discarded tab ...
+}
+
+// Inject only if nothing answers a ping (so we never double-load).
+function ensureInjected(tabId) {
+  return new Promise((resolve) => {
+    chrome.tabs.sendMessage(tabId, { type: 'spellfix-ping' }, (response) => {
+      if (chrome.runtime.lastError || !response) injectInto(tabId).then(resolve);
+      else resolve(true);
+    });
+  });
+}
+
+function ensureInjectedEverywhere() {
+  chrome.tabs.query({ url: ['http://*/*', 'https://*/*'] }, (tabs) => {
+    for (const tab of tabs || []) {
+      if (tab.id != null && !tab.discarded && PageSupport.classifyUrl(tab.url).kind === 'web') ensureInjected(tab.id);
+    }
+  });
+}
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message && message.type === 'spellfix-inject' && typeof message.tabId === 'number') {
+    injectInto(message.tabId).then((ok) => sendResponse({ ok }));
+    return true; // keep the channel open for the async response
+  }
+  return false;
+});
 
 // --- Toolbar badge -------------------------------------------------------
 
@@ -102,6 +149,7 @@ chrome.storage.onChanged.addListener((changes, area) => {
 chrome.runtime.onInstalled.addListener((details) => {
   syncBadge();
   createMenus();
+  ensureInjectedEverywhere(); // install, update and "reload" from chrome://extensions
   if (details.reason === 'install') {
     chrome.tabs.create({ url: chrome.runtime.getURL('welcome/welcome.html') });
   }
