@@ -104,6 +104,8 @@
 
   function insertViaExecCommand(text) {
     try {
+      // An empty replacement means "delete the selection".
+      if (text === '') return document.execCommand('delete');
       return document.execCommand('insertText', false, text);
     } catch (e) {
       return false;
@@ -118,6 +120,7 @@
       const from = caret - length;
       if (from < 0) return false;
       el.setSelectionRange(from, caret);
+      if (length === 0 && text === '') return true;
       if (insertViaExecCommand(text)) return true;
       // Fallback for pages that block execCommand: edit directly and tell the page.
       el.setRangeText(text, from, caret, 'end');
