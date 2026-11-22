@@ -15,6 +15,8 @@ SpellFix is built to be boring about your data.
   fields, and ignores code editors.
 - **Permissions.** `storage` keeps your settings; `activeTab` lets the popup
   read the current tab's hostname so you can disable SpellFix for that site;
+  `scripting` with all-sites access lets SpellFix start in tabs that were
+  already open (it injects only its own bundled scripts, never remote code);
   `contextMenus` adds the right-click entries "never fix this word" and
   "turn off for this site".
 - **Optional sync.** If you switch on "Sync kept words", only the list of words
