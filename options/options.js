@@ -7,11 +7,11 @@
     sensitivity: 'balanced', fixOnEnter: true, showHighlight: true,
     includeSearchBoxes: true, fixCapitalizedAtSentenceStart: true,
     contextFixes: false, capitalizeI: false, showHint: false, syncWords: false,
-    smartMode: false, smartProvider: 'anthropic', smartModel: '', smartLastError: '',
+    smartMode: false, smartProvider: 'anthropic', smartModel: '', smartLastError: '', grammarShortcut: true,
   };
   const TOGGLES = [
     'fixOnEnter', 'showHighlight', 'includeSearchBoxes', 'fixCapitalizedAtSentenceStart',
-    'contextFixes', 'capitalizeI', 'showHint', 'syncWords',
+    'contextFixes', 'capitalizeI', 'showHint', 'syncWords', 'grammarShortcut',
   ];
   let state = Object.assign({}, DEFAULTS);
 
