@@ -8,7 +8,7 @@ SpellFix is built to be boring about your data.
   The one exception is **Smart mode**, which is off until you turn it on (see
   below).
 - **Smart mode (optional, off by default).** If you add your own API key for
-  Anthropic or OpenAI and switch Smart mode on, SpellFix sends the *sentence you
+  Anthropic, OpenAI or xAI (Grok) and switch Smart mode on, SpellFix sends the *sentence you
   just wrote* directly from your browser to **that provider** so an AI can fix
   spelling using the whole sentence. SpellFix has no servers and never sees it.
   - Only sentences that still contain a word SpellFix does not recognise are sent.
