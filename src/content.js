@@ -275,6 +275,53 @@
     return smartRunner;
   }
 
+  // --- Ctrl+Space: polish grammar and sentence structure ----------------------------
+
+  let polisher = null;
+
+  function sendPolishToBackground(text) {
+    return new Promise((resolve) => {
+      try {
+        chrome.runtime.sendMessage({ type: 'spellfix-polish', text }, (reply) => {
+          if (chrome.runtime.lastError || !reply) {
+            resolve({ ok: false, error: 'SpellFix was reloaded. Refresh this page to use Ctrl+Space.' });
+          } else {
+            resolve(reply);
+          }
+        });
+      } catch (e) {
+        resolve({ ok: false, error: 'SpellFix was reloaded. Refresh this page to use Ctrl+Space.' });
+      }
+    });
+  }
+
+  function getPolisher() {
+    if (polisher || !root.SpellFixPolish || typeof chrome === 'undefined' || !chrome.runtime || !chrome.runtime.sendMessage) {
+      return polisher;
+    }
+    polisher = root.SpellFixPolish.createPolisher({
+      getSettings: Settings.get,
+      getTarget: Editors.getPolishTarget,
+      send: sendPolishToBackground,
+      show: (ctx, message, kind) => Feedback.toast(ctx, message, kind),
+      guard: (fn) => {
+        busy = true; // our own edit must not trigger corrections
+        try {
+          return fn();
+        } finally {
+          busy = false;
+        }
+      },
+      onDone: (ctx) => {
+        lastCorrection = null;
+        undoWatch = null;
+        Feedback.pulse(ctx);
+      },
+      smart: root.SpellFixSmartFix,
+    });
+    return polisher;
+  }
+
   /** data: the character just typed ('.', '!', '?', '\n') ends a sentence; anything else is ordinary typing. */
   function smartTyping(ctx, data) {
     const runner = getSmartRunner();
@@ -313,6 +360,20 @@
   function onKeyDown(event) {
     if (!active || busy || event.isComposing) return;
     const key = event.key;
+
+    // Ctrl+Space: polish the paragraph / selection / whole box with the AI.
+    if (event.code === 'Space' && event.ctrlKey && !event.shiftKey && !event.altKey && !event.metaKey) {
+      if (Settings.get().grammarShortcut) {
+        const target = editableFor(event);
+        const runner = target && getPolisher();
+        if (runner) {
+          event.preventDefault(); // keep apps from treating it as autocomplete
+          event.stopImmediatePropagation();
+          runner.run(target);
+        }
+      }
+      return;
+    }
 
     if (key === 'Backspace' && !event.ctrlKey && !event.metaKey && !event.altKey && lastCorrection) {
       const ctx = editableFor(event);
