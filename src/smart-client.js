@@ -59,7 +59,7 @@
           },
           body: JSON.stringify({
             model,
-            max_tokens: MAX_TOKENS,
+            max_tokens: opts.maxTokens || MAX_TOKENS,
             temperature: 0,
             system,
             messages: [{ role: 'user', content: user }],
@@ -75,7 +75,7 @@
           headers: { 'content-type': 'application/json', authorization: 'Bearer ' + key },
           body: JSON.stringify({
             model,
-            max_completion_tokens: MAX_COMPLETION_TOKENS,
+            max_completion_tokens: opts.maxTokens || MAX_COMPLETION_TOKENS,
             temperature: 0,
             messages: [
               { role: 'system', content: system },
