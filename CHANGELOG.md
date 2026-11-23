@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.4.2
+
+### Added
+- Groq (GroqCloud) as a fourth Smart mode provider (`api.groq.com`, default model
+  `openai/gpt-oss-20b`).
+- Settings warns when the saved key's prefix belongs to a different provider
+  (for example a `gsk_` Groq key while xAI is selected).
+
+### Changed
+- Switching provider resets the model to that provider's default, since model
+  names differ between providers.
+- "Unknown provider" errors now explain that the extension needs a reload.
+
 ## 0.4.1
 
 ### Added
