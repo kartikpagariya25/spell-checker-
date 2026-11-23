@@ -33,6 +33,47 @@
       <label class="toggle"><input type="checkbox" id="fixCapitalizedAtSentenceStart"> <span>Fix capitalised words at the start of a sentence<small>Capitalised words mid-sentence are never touched (they're usually names).</small></span></label>
     </section>
 
+    <section id="smartSection">
+      <h2>Smart mode (AI)</h2>
+      <p class="note">When you finish a sentence (or pause typing), SpellFix can ask an AI to fix spelling
+        using the <strong>whole sentence</strong>, so it understands the meaning and tone. This sends text off your
+        device, so it stays off until you add your own API key and turn it on.</p>
+      <ul class="facts">
+        <li>Only sentences that still contain a word SpellFix doesn't recognise are sent.</li>
+        <li>Emails, links, @mentions, numbers and long keys are replaced by placeholders first.</li>
+        <li>Passwords, name / address / phone fields and code editors are never read.</li>
+        <li>The AI may only fix spelling. Any rewording is thrown away, and one Ctrl+Z undoes a smart fix.</li>
+        <li>Your key stays on this device and goes only to the provider you pick. Usage is billed to your account.</li>
+      </ul>
+
+      <div class="field">
+        <label for="smartProvider">Provider</label>
+        <select id="smartProvider">
+          <option value="anthropic">Anthropic (Claude)</option>
+          <option value="openai">OpenAI</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="smartKey">API key</label>
+        <div class="inline">
+          <input type="password" id="smartKey" autocomplete="off" spellcheck="false" placeholder="Paste your API key">
+          <button type="button" id="saveKey">Save key</button>
+          <button type="button" id="removeKey">Remove</button>
+        </div>
+        <p class="sub" id="keyStatus">No key saved.</p>
+      </div>
+      <div class="field">
+        <label for="smartModel">Model <span class="sub">(optional)</span></label>
+        <input type="text" id="smartModel" spellcheck="false" autocomplete="off">
+      </div>
+      <div class="buttons">
+        <button type="button" id="testSmart">Test connection</button>
+      </div>
+      <p id="smartMessage" role="status" aria-live="polite"></p>
+      <label class="toggle"><input type="checkbox" id="smartMode"> <span><strong>Turn on Smart mode</strong><small>Runs when you end a sentence with . ! ? or Enter, or pause for about a second and a half.</small></span></label>
+      <p id="smartError" class="error" hidden></p>
+    </section>
+
     <section>
       <h2>Extras (off by default)</h2>
       <label class="toggle"><input type="checkbox" id="contextFixes"> <span>Fix "could of" and doubled words<small>"could of" becomes "could have"; "the the" becomes "the".</small></span></label>
@@ -58,6 +99,7 @@
       <p class="sub" id="noSites">SpellFix is active everywhere.</p>
     </section>
   </main>
+  <script src="../src/smart-client.js"></script>
   <script src="options.js"></script>
 </body>
 </html>
