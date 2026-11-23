@@ -60,6 +60,17 @@ test('every listed provider can build a request and has a default model', () => 
   }
 });
 
+test('maxTokens raises the output limit for longer rewrites on every provider', () => {
+  const anthropic = JSON.parse(C.buildRequest(Object.assign({ provider: 'anthropic', maxTokens: 3000 }, base)).init.body);
+  assert.equal(anthropic.max_tokens, 3000);
+  for (const provider of ['openai', 'xai', 'groq']) {
+    const body = JSON.parse(C.buildRequest(Object.assign({ provider, maxTokens: 4000 }, base)).init.body);
+    assert.equal(body.max_completion_tokens, 4000, provider);
+  }
+  // defaults are unchanged when it is not given
+  assert.equal(JSON.parse(C.buildRequest(Object.assign({ provider: 'anthropic' }, base)).init.body).max_tokens, 600);
+});
+
 test('groq request uses the GroqCloud endpoint and its default model', () => {
   const r = C.buildRequest(Object.assign({ provider: 'groq' }, base));
   assert.equal(r.url, 'https://api.groq.com/openai/v1/chat/completions');
