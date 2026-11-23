@@ -137,12 +137,90 @@
     return insertViaExecCommand(text);
   }
 
+  /**
+   * Replaces an exact piece of text that sits before the caret with `replacement`
+   * as ONE edit (one Ctrl+Z restores it) and puts the caret back where it was.
+   * Returns false, changing nothing, if the text can't be found unchanged.
+   */
+  function replaceText(ctx, original, replacement) {
+    if (!original || original === replacement) return false;
+    const delta = replacement.length - original.length;
+
+    if (ctx.kind === 'field') {
+      const el = ctx.el;
+      let caret;
+      let end;
+      try {
+        caret = el.selectionStart;
+        end = el.selectionEnd;
+      } catch (e) {
+        return false;
+      }
+      if (caret == null || caret !== end) return false;
+      const idx = el.value.lastIndexOf(original, caret - original.length);
+      if (idx === -1 || idx + original.length > caret) return false;
+      el.setSelectionRange(idx, idx + original.length);
+      let ok = insertViaExecCommand(replacement);
+      if (!ok) {
+        el.setRangeText(replacement, idx, idx + original.length, 'end');
+        el.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertText', data: replacement }));
+        ok = true;
+      }
+      try {
+        el.setSelectionRange(caret + delta, caret + delta);
+      } catch (e) {
+        /* caret restore is best effort */
+      }
+      return ok;
+    }
+
+    const caret = richCaret(ctx);
+    if (!caret) return false;
+    let node = caret.node;
+    let idx = node.data.lastIndexOf(original, caret.offset - original.length);
+    if (idx === -1 || idx + original.length > caret.offset) {
+      // The sentence may live in an earlier text node (the caret moved on); find it.
+      idx = -1;
+      node = null;
+      const walker = document.createTreeWalker(ctx.el, NodeFilter.SHOW_TEXT);
+      let n;
+      while ((n = walker.nextNode())) {
+        const i = n.data.lastIndexOf(original);
+        if (i !== -1) {
+          idx = i;
+          node = n;
+        }
+      }
+      if (!node) return false;
+    }
+
+    const range = document.createRange();
+    range.setStart(node, idx);
+    range.setEnd(node, idx + original.length);
+    caret.sel.removeAllRanges();
+    caret.sel.addRange(range);
+    if (!insertViaExecCommand(replacement)) return false;
+
+    // Put the caret back: shifted by the length change if it was in the edited node.
+    if (caret.node.isConnected) {
+      const offset = caret.node === node ? caret.offset + delta : caret.offset;
+      if (offset >= 0 && offset <= caret.node.data.length) {
+        const back = document.createRange();
+        back.setStart(caret.node, offset);
+        back.collapse(true);
+        caret.sel.removeAllRanges();
+        caret.sel.addRange(back);
+      }
+    }
+    return true;
+  }
+
   /** Whole text of the field, regardless of where the caret is. */
   function fieldText(ctx) {
     return ctx.kind === 'field' ? ctx.el.value : ctx.el.textContent || '';
   }
 
-  const api = { resolve, getCaretContext, replaceBeforeCaret, selectionFor, richCaret, fieldText };
+  const api = { resolve, getCaretContext, replaceBeforeCaret, replaceText, selectionFor, richCaret, fieldText };
   root.SpellFixEditors = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
