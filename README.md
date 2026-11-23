@@ -114,7 +114,25 @@ becomes `they're going to the store tomorrow`.
 3. The AI may only fix spelling. Rewording is rejected, and the whole sentence is
    changed in one edit so a single **Ctrl+Z** undoes it.
 
-It is off by default because it sends text to the provider you pick. See
+### Ctrl+Space: polish grammar and sentence structure
+
+Press **Ctrl+Space** in any text box to have the AI fix grammar, punctuation and
+awkward sentence structure while keeping your meaning, tone and language:
+
+- plain text boxes: polishes your selection, or everything in the box;
+- rich editors (ChatGPT, Gemini, Slack ...): polishes your selection or the
+  paragraph your cursor is in (select within one paragraph; multi-paragraph
+  selections are refused with a hint);
+- the text is treated as data to edit, never as instructions (a question stays a
+  question), protected parts (links, code, numbers) are kept, the answer is
+  checked, and the edit is a single step that **Ctrl+Z** undoes.
+
+It needs the same saved API key but works even when automatic Smart mode is off,
+and can be turned off in Settings. Only the text you pick is sent, and only when
+you press the shortcut.
+
+Both features stay inactive until you add your own API key (automatic Smart mode
+also needs switching on), because they send text to the provider you pick. See
 [PRIVACY.md](PRIVACY.md). Fixes triggered by Enter in chat boxes may arrive after
 the message was already sent; the pause and the sentence end are the reliable triggers.
 
