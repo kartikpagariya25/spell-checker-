@@ -9,9 +9,18 @@
   const DEFAULT_MODELS = {
     anthropic: 'claude-haiku-5-5',
     openai: 'gpt-4o-mini',
+    xai: 'grok-4.7',
   };
   const PROVIDERS = Object.keys(DEFAULT_MODELS);
   const MAX_TOKENS = 600;
+  // Reasoning-capable models count their hidden thinking against the limit, so give them room.
+  const MAX_COMPLETION_TOKENS = 2000;
+
+  // Providers that speak the OpenAI "chat completions" dialect.
+  const OPENAI_COMPATIBLE = {
+    openai: 'https://api.openai.com/v1/chat/completions',
+    xai: 'https://api.x.ai/v1/chat/completions',
+  };
 
   function modelFor(provider, model) {
     return (model && model.trim()) || DEFAULT_MODELS[provider];
@@ -43,15 +52,15 @@
         },
       };
     }
-    if (provider === 'openai') {
+    if (OPENAI_COMPATIBLE[provider]) {
       return {
-        url: 'https://api.openai.com/v1/chat/completions',
+        url: OPENAI_COMPATIBLE[provider],
         init: {
           method: 'POST',
           headers: { 'content-type': 'application/json', authorization: 'Bearer ' + key },
           body: JSON.stringify({
             model,
-            max_tokens: MAX_TOKENS,
+            max_completion_tokens: MAX_COMPLETION_TOKENS,
             temperature: 0,
             messages: [
               { role: 'system', content: system },
@@ -71,7 +80,7 @@
         const block = (json.content || []).find((b) => b && b.type === 'text');
         return block ? String(block.text) : null;
       }
-      if (provider === 'openai') {
+      if (OPENAI_COMPATIBLE[provider]) {
         const message = json.choices && json.choices[0] && json.choices[0].message;
         return message && typeof message.content === 'string' ? message.content : null;
       }
