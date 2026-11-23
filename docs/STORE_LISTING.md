@@ -40,7 +40,7 @@ Productivity
 | `storage` | Saves your settings, kept words and counters on your device (and, if you opt in, in your browser's own sync storage). |
 | `activeTab` | Lets the popup read the current site's hostname for the per-site on/off switch. |
 | Host access (`<all_urls>`) and `scripting` | Lets SpellFix start working in tabs that were already open when it was installed or updated, and lets the popup's "Activate on this tab" button repair a tab. It injects only SpellFix's own bundled scripts; no remote code. |
-| Network access to `api.anthropic.com` / `api.openai.com` / `api.x.ai` (via the all-sites host permission) | Used only by the optional Smart mode, with the user's own API key, to send a sentence for spelling correction. |
+| Network access to `api.anthropic.com` / `api.openai.com` / `api.x.ai` / `api.groq.com` (via the all-sites host permission) | Used only by the optional Smart mode, with the user's own API key, to send a sentence for spelling correction. |
 | `contextMenus` | Adds "never fix this word" and "turn off for this site" to the right-click menu. |
 
 ## Single purpose statement
@@ -52,7 +52,7 @@ Automatically correct spelling mistakes in the text the user types.
   user turns it on, the sentence they just typed - only if it contains a word the
   offline dictionary does not recognise, with emails, links, @mentions, numbers
   and key-like strings replaced by placeholders - is sent directly from the
-  browser to the AI provider the user chose (Anthropic, OpenAI or xAI) to correct
+  browser to the AI provider the user chose (Anthropic, OpenAI, xAI or Groq) to correct
   spelling. The developer receives nothing. Disclose as "user content - website
   content / text typed by the user" with purpose "app functionality", only when
   the user enables the feature.
