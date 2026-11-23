@@ -99,6 +99,25 @@ The dictionary is derived from the public word-frequency list in
 [SymSpell](https://github.com/wolfgarbe/SymSpell) (`en-80k.txt`), filtered to
 plain lowercase words with a curated list of short words.
 
+## Smart mode (optional AI)
+
+The offline checker fixes typos word by word. **Smart mode** adds a sentence
+pass that understands *meaning and tone*: `their going to the stor tomorow`
+becomes `they're going to the store tomorrow`.
+
+1. Open Settings, choose a provider (Anthropic or OpenAI), paste **your own API
+   key**, press *Test connection*, then turn Smart mode on.
+2. When you end a sentence (`. ! ?`), press Enter, or pause for about 1.5 s,
+   SpellFix checks the sentence. Only sentences that still contain a word it
+   doesn't recognise are sent; emails, links, numbers and @mentions are replaced
+   by placeholders first.
+3. The AI may only fix spelling. Rewording is rejected, and the whole sentence is
+   changed in one edit so a single **Ctrl+Z** undoes it.
+
+It is off by default because it sends text to the provider you pick. See
+[PRIVACY.md](PRIVACY.md). Fixes triggered by Enter in chat boxes may arrive after
+the message was already sent; the pause and the sentence end are the reliable triggers.
+
 ## Where it can't run (browser limits)
 
 Browsers refuse to run extensions on some pages, whatever the extension does:
