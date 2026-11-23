@@ -36,7 +36,19 @@
 
   <script>
     // Stand-in for the extension storage API so the scripts run on a plain page.
-    window.chrome = { storage: { local: { get: (d, cb) => cb(d), set: () => {} }, onChanged: { addListener: () => {} } } };
+    window.chrome = {
+      storage: { local: { get: (d, cb) => cb(d), set: () => {} }, onChanged: { addListener: () => {} } },
+      // Fake "AI" for Smart mode: answers instantly with a plausible correction.
+      runtime: {
+        id: 'manual-test',
+        sendMessage: (message, cb) => {
+          window.__lastSmartRequest = message;
+          const fixed = message.sentence
+            .replace(/\btheir going\b/, "they're going").replace(/\bstor\b/, 'store').replace(/\btomorow\b/, 'tomorrow');
+          setTimeout(() => cb({ ok: true, reply: '<fixed>' + fixed + '</fixed>' }), 30);
+        },
+      },
+    };
   </script>
   <script src="../../src/dictionary-data.js"></script>
   <script src="../../src/text-utils.js"></script>
@@ -46,6 +58,8 @@
   <script src="../../src/settings.js"></script>
   <script src="../../src/stats.js"></script>
   <script src="../../src/context-fixes.js"></script>
+  <script src="../../src/smart-fix.js"></script>
+  <script src="../../src/smart-runner.js"></script>
   <script src="../../src/field-rules.js"></script>
   <script src="../../src/editors.js"></script>
   <script src="../../src/feedback.js"></script>
