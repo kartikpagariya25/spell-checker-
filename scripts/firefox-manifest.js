@@ -10,7 +10,12 @@ const GECKO_ID = 'spellfix@kartikpagariya25.github.io';
 function toFirefoxManifest(manifest) {
   const out = JSON.parse(JSON.stringify(manifest));
   if (out.background && out.background.service_worker) {
-    out.background = { scripts: ['src/word-merge.js', 'src/page-support.js', out.background.service_worker] };
+    out.background = {
+      scripts: [
+        'src/word-merge.js', 'src/page-support.js', 'src/smart-fix.js', 'src/smart-client.js',
+        out.background.service_worker,
+      ],
+    };
   }
   out.browser_specific_settings = {
     gecko: { id: GECKO_ID, strict_min_version: '115.0' },
