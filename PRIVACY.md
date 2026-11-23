@@ -2,9 +2,30 @@
 
 SpellFix is built to be boring about your data.
 
-- **Nothing you type leaves your browser.** Spelling is checked entirely on your
-  device against a dictionary bundled with the extension. There are no servers,
-  no analytics, no tracking and no network requests.
+- **By default, nothing you type leaves your browser.** Spelling is checked
+  entirely on your device against a dictionary bundled with the extension. There
+  are no SpellFix servers, no analytics, no tracking and no network requests.
+  The one exception is **Smart mode**, which is off until you turn it on (see
+  below).
+- **Smart mode (optional, off by default).** If you add your own API key for
+  Anthropic or OpenAI and switch Smart mode on, SpellFix sends the *sentence you
+  just wrote* directly from your browser to **that provider** so an AI can fix
+  spelling using the whole sentence. SpellFix has no servers and never sees it.
+  - Only sentences that still contain a word SpellFix does not recognise are sent.
+    Sentences with nothing suspicious stay on your device.
+  - Before sending, emails, links, @mentions, #tags, phone / card / id-like
+    numbers and long key-like strings are replaced by placeholders and put back
+    afterwards.
+  - Passwords, email / number / URL fields, name / address / phone / username
+    fields, code editors and `spellcheck="false"` fields are never read.
+  - The AI's answer is checked: any rewording is discarded; only spelling-sized
+    word changes are applied.
+  - The provider handles the text under its own terms and privacy policy.
+    Usage is billed to your own account with them.
+  - Your API key is stored in `chrome.storage.local` on this device, is used only
+    by the extension's background worker, is never put in the backup file, never
+    shown in error messages, and is sent only to the provider you selected.
+    Removing the key in Settings deletes it and turns Smart mode off.
 - **What is stored** (in `chrome.storage.local`, on your device only):
   your on/off setting, sites you turned it off for, the words you chose to keep
   by pressing Backspace after a fix, your preferences, a count of fixes, and the
