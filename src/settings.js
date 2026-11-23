@@ -23,6 +23,7 @@
     capitalizeI: false, // opt-in: lone "i" -> "I"
     showHint: false, // opt-in: small "teh -> the" tooltip next to the field
     syncWords: false, // opt-in: sync kept words through the browser account
+    grammarShortcut: true, // Ctrl+Space polishes grammar and sentence structure (needs an API key)
     // Smart mode (AI). The API key is deliberately NOT here: only the background worker and the options page read it.
     smartMode: false,
     smartProvider: 'anthropic', // 'anthropic' | 'openai'
