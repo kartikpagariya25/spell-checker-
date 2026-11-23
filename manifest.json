@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "SpellFix - Silent Auto-Correct",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "description": "Silently fixes spelling mistakes as you type, on any website. Press Backspace right after a fix to keep your original spelling.",
   "author": "Kartik Pagariya",
   "permissions": ["storage", "activeTab", "contextMenus", "scripting"],
@@ -53,6 +53,7 @@
         "src/context-fixes.js",
         "src/smart-fix.js",
         "src/smart-runner.js",
+        "src/polish.js",
         "src/field-rules.js",
         "src/editors.js",
         "src/feedback.js",
