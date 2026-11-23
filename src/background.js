@@ -8,7 +8,7 @@
 // Chrome loads this as a service worker (importScripts); Firefox as an event
 // page whose manifest already lists word-merge.js before this file.
 if (typeof importScripts === 'function') {
-  importScripts('word-merge.js', 'page-support.js', 'smart-fix.js', 'smart-client.js');
+  importScripts('word-merge.js', 'page-support.js', 'smart-fix.js', 'smart-client.js', 'polish.js');
 }
 const WordMerge = self.SpellFixWordMerge;
 const PageSupport = self.SpellFixPageSupport;
@@ -47,6 +47,34 @@ function handleSmartRequest(message, respond) {
     if (!config.smartMode || !config.smartKey) return respond({ ok: false, error: 'off' });
     if (!smartLimiter.tryTake()) return respond({ ok: false, error: 'Too many requests at once. Slowing down.' });
     askModel(sentence, config).then(respond);
+  });
+}
+
+// Ctrl+Space "polish": an explicit request, so it works with the saved key even
+// when automatic Smart mode is off. Longer output, longer timeout, own rate limit.
+const Polish = self.SpellFixPolish;
+const polishLimiter = SmartClient.createRateLimiter(10, 60000);
+
+function handlePolishRequest(message, respond) {
+  const text = message.text;
+  if (typeof text !== 'string' || text.trim() === '' || text.length > Polish.MAX_CHARS + 400) {
+    return respond({ ok: false, error: 'Invalid request.' });
+  }
+  readSmartConfig((config) => {
+    if (!config.smartKey) {
+      return respond({ ok: false, error: 'Add an API key first: SpellFix settings, Smart mode.' });
+    }
+    if (!polishLimiter.tryTake()) return respond({ ok: false, error: 'Too many polish requests. Wait a moment.' });
+    SmartClient.requestReply({
+      fetchImpl: (url, init) => fetch(url, init),
+      provider: config.smartProvider,
+      key: config.smartKey,
+      model: config.smartModel,
+      system: Polish.SYSTEM_PROMPT,
+      user: Polish.userPrompt(text),
+      maxTokens: 4000,
+      timeoutMs: 25000,
+    }).then(respond);
   });
 }
 
@@ -108,6 +136,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
   if (message.type === 'spellfix-smart') {
     handleSmartRequest(message, sendResponse);
+    return true;
+  }
+  if (message.type === 'spellfix-polish') {
+    handlePolishRequest(message, sendResponse);
     return true;
   }
   if (message.type === 'spellfix-smart-test') {
