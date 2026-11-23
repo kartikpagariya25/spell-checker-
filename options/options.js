@@ -62,6 +62,16 @@
     el.className = kind || '';
   }
 
+  const PROVIDER_NAMES = { anthropic: 'Anthropic', openai: 'OpenAI', xai: 'xAI (Grok)', groq: 'Groq' };
+
+  // Warn (never block) when the saved key's prefix says it belongs to another provider.
+  function keyMismatchWarning() {
+    const guess = SpellFixSmartClient.keyLooksLike(savedKey);
+    if (!savedKey || !guess || guess === state.smartProvider) return '';
+    return 'This key looks like a ' + PROVIDER_NAMES[guess] + ' key, but the provider is set to ' +
+      PROVIDER_NAMES[state.smartProvider] + '. Pick ' + PROVIDER_NAMES[guess] + ' above if that is what you meant.';
+  }
+
   function renderSmart() {
     $('smartProvider').value = state.smartProvider;
     $('smartModel').value = state.smartModel;
@@ -72,6 +82,9 @@
     $('testSmart').disabled = !savedKey;
     $('smartError').hidden = !state.smartLastError;
     $('smartError').textContent = state.smartLastError ? 'Last problem: ' + state.smartLastError : '';
+    const warning = keyMismatchWarning();
+    $('keyWarning').hidden = !warning;
+    $('keyWarning').textContent = warning;
   }
 
   function loadKey() {
@@ -81,7 +94,8 @@
     });
   }
 
-  $('smartProvider').addEventListener('change', (e) => save({ smartProvider: e.target.value }));
+  // Model names are provider-specific, so switching provider resets the model to its default.
+  $('smartProvider').addEventListener('change', (e) => save({ smartProvider: e.target.value, smartModel: '' }));
   $('smartModel').addEventListener('change', (e) => save({ smartModel: e.target.value.trim() }));
 
   $('saveKey').addEventListener('click', () => {
