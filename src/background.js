@@ -7,9 +7,60 @@
 
 // Chrome loads this as a service worker (importScripts); Firefox as an event
 // page whose manifest already lists word-merge.js before this file.
-if (typeof importScripts === 'function') importScripts('word-merge.js', 'page-support.js');
+if (typeof importScripts === 'function') {
+  importScripts('word-merge.js', 'page-support.js', 'smart-fix.js', 'smart-client.js');
+}
 const WordMerge = self.SpellFixWordMerge;
 const PageSupport = self.SpellFixPageSupport;
+const SmartFix = self.SpellFixSmartFix;
+const SmartClient = self.SpellFixSmartClient;
+
+// --- Smart mode: ask the user's chosen AI provider ------------------------------
+//
+// The API key lives only in chrome.storage.local ("smartKey") and is read only
+// here and on the options page. Web pages can never see it, and error messages
+// never contain it.
+
+const smartLimiter = SmartClient.createRateLimiter(30, 60000);
+
+function readSmartConfig(callback) {
+  chrome.storage.local.get({ smartMode: false, smartProvider: 'anthropic', smartModel: '', smartKey: '' }, callback);
+}
+
+function askModel(sentence, config) {
+  return SmartClient.requestReply({
+    fetchImpl: (url, init) => fetch(url, init),
+    provider: config.smartProvider,
+    key: config.smartKey,
+    model: config.smartModel,
+    system: SmartFix.SYSTEM_PROMPT,
+    user: SmartFix.userPrompt(sentence),
+  });
+}
+
+function handleSmartRequest(message, respond) {
+  const sentence = message.sentence;
+  if (typeof sentence !== 'string' || sentence.length === 0 || sentence.length > SmartFix.MAX_SENTENCE + 80) {
+    return respond({ ok: false, error: 'Invalid request.' });
+  }
+  readSmartConfig((config) => {
+    if (!config.smartMode || !config.smartKey) return respond({ ok: false, error: 'off' });
+    if (!smartLimiter.tryTake()) return respond({ ok: false, error: 'Too many requests at once. Slowing down.' });
+    askModel(sentence, config).then(respond);
+  });
+}
+
+// "Test connection" on the options page: uses the saved key even if Smart mode is still off.
+function handleSmartTest(respond) {
+  readSmartConfig((config) => {
+    if (!config.smartKey) return respond({ ok: false, error: 'Save an API key first.' });
+    askModel('their going to the stor tomorow', config).then((result) => {
+      if (!result.ok) return respond(result);
+      const fixed = SmartFix.parseFixed(result.reply);
+      respond(fixed ? { ok: true, fixed } : { ok: false, error: 'The model answered, but not in the expected format.' });
+    });
+  });
+}
 
 // --- Making sure the content script is running in a tab -------------------
 //
@@ -50,9 +101,18 @@ function ensureInjectedEverywhere() {
 }
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message && message.type === 'spellfix-inject' && typeof message.tabId === 'number') {
+  if (!message || sender.id !== chrome.runtime.id) return false;
+  if (message.type === 'spellfix-inject' && typeof message.tabId === 'number') {
     injectInto(message.tabId).then((ok) => sendResponse({ ok }));
     return true; // keep the channel open for the async response
+  }
+  if (message.type === 'spellfix-smart') {
+    handleSmartRequest(message, sendResponse);
+    return true;
+  }
+  if (message.type === 'spellfix-smart-test') {
+    handleSmartTest(sendResponse);
+    return true;
   }
   return false;
 });
