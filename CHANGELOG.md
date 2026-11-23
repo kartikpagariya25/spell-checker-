@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.5.0
+
+### Added
+- **Ctrl+Space polish:** fixes grammar, punctuation and sentence structure of the
+  selection, the paragraph around the cursor, or the whole box, keeping meaning,
+  tone and language.
+  - One undoable edit; text that changed while waiting is never overwritten.
+  - Protected tokens, code blocks and paragraph structure are verified.
+  - Works with the saved API key even if automatic Smart mode is off; can be
+    disabled in Settings.
+  - Small status bubble: Polishing... / Polished / error hints.
+- Longer output limits and a longer timeout for polish requests.
+
 ## 0.4.2
 
 ### Added
