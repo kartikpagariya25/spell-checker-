@@ -8,7 +8,8 @@ test('background becomes an event page that loads word-merge first', () => {
   const ff = toFirefoxManifest(chrome);
   assert.equal(ff.background.service_worker, undefined);
   assert.deepEqual(ff.background.scripts, [
-    'src/word-merge.js', 'src/page-support.js', 'src/smart-fix.js', 'src/smart-client.js', 'src/background.js',
+    'src/word-merge.js', 'src/page-support.js', 'src/smart-fix.js', 'src/smart-client.js', 'src/polish.js',
+    'src/background.js',
   ]);
 });
 

@@ -13,7 +13,7 @@ function toFirefoxManifest(manifest) {
     out.background = {
       scripts: [
         'src/word-merge.js', 'src/page-support.js', 'src/smart-fix.js', 'src/smart-client.js',
-        out.background.service_worker,
+        'src/polish.js', out.background.service_worker,
       ],
     };
   }
