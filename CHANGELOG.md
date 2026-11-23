@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.4.0
+
+### Added
+- **Smart mode (AI, opt-in).** Bring your own Anthropic or OpenAI key. When you
+  end a sentence, press Enter or pause, sentences that still contain a suspected
+  typo are checked by the AI using the whole sentence for meaning and tone.
+  - Private-looking tokens are replaced by placeholders before sending.
+  - Only spelling-sized changes are accepted; rewording is rejected.
+  - Applied as one edit, undone with a single Ctrl+Z; caret position is kept.
+  - Rate limited, with timeouts and friendly error messages (the key is never
+    shown). "Test connection" button in Settings.
+- Privacy policy and store disclosure updated for the optional feature.
+
 ## 0.3.1
 
 ### Fixed
