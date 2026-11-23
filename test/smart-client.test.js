@@ -40,7 +40,7 @@ test('xai (Grok) request uses the xAI endpoint with the OpenAI-style body', () =
 });
 
 test('OpenAI-style providers leave room for reasoning tokens', () => {
-  for (const provider of ['openai', 'xai']) {
+  for (const provider of ['openai', 'xai', 'groq']) {
     const body = JSON.parse(C.buildRequest(Object.assign({ provider }, base)).init.body);
     assert.ok(body.max_completion_tokens >= 1000, provider);
     assert.equal(body.max_tokens, undefined, provider);
@@ -53,11 +53,41 @@ test('xai responses are parsed like OpenAI responses', () => {
 });
 
 test('every listed provider can build a request and has a default model', () => {
-  assert.deepEqual(C.PROVIDERS.slice().sort(), ['anthropic', 'openai', 'xai']);
+  assert.deepEqual(C.PROVIDERS.slice().sort(), ['anthropic', 'groq', 'openai', 'xai']);
   for (const provider of C.PROVIDERS) {
     assert.ok(C.DEFAULT_MODELS[provider], provider);
     assert.doesNotThrow(() => C.buildRequest(Object.assign({ provider }, base)), provider);
   }
+});
+
+test('groq request uses the GroqCloud endpoint and its default model', () => {
+  const r = C.buildRequest(Object.assign({ provider: 'groq' }, base));
+  assert.equal(r.url, 'https://api.groq.com/openai/v1/chat/completions');
+  assert.equal(r.init.headers.authorization, 'Bearer sk-test-KEY');
+  const body = JSON.parse(r.init.body);
+  assert.equal(body.model, 'openai/gpt-oss-20b');
+  assert.equal(body.max_completion_tokens >= 1000, true);
+  assert.deepEqual(body.messages.map((m) => m.role), ['system', 'user']);
+});
+
+test('groq responses are parsed like OpenAI responses', () => {
+  assert.equal(C.parseResponse('groq', { choices: [{ message: { content: '<fixed>ok</fixed>' } }] }), '<fixed>ok</fixed>');
+});
+
+test('keyLooksLike recognises each provider prefix and stays quiet otherwise', () => {
+  assert.equal(C.keyLooksLike('sk-ant-api03-abcdefghijklmnop'), 'anthropic');
+  assert.equal(C.keyLooksLike('xai-abcdefghijklmnopqrstuv'), 'xai');
+  assert.equal(C.keyLooksLike('gsk_abcdefghijklmnopqrstuv'), 'groq');
+  assert.equal(C.keyLooksLike('sk-proj-abcdefghijklmnopqrstuv'), 'openai');
+  assert.equal(C.keyLooksLike('some-custom-gateway-key-123'), null);
+  assert.equal(C.keyLooksLike(''), null);
+  assert.equal(C.keyLooksLike(undefined), null);
+});
+
+test('an unknown provider tells the user to reload the extension', async () => {
+  const r = await C.requestReply(Object.assign({ provider: 'xai-old', fetchImpl: async () => ({}) }, base));
+  assert.equal(r.ok, false);
+  assert.match(r.error, /reload it in chrome:\/\/extensions/);
 });
 
 test('a custom model overrides the default, blank falls back', () => {
