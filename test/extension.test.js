@@ -29,6 +29,23 @@ test('referencedByManifest lists icons and pages', () => {
   assert.ok(files.includes('src/background.js'));
 });
 
+test('background importScripts only names files that exist', () => {
+  const fs = require('fs');
+  const source = fs.readFileSync(path.join(ROOT, 'src', 'background.js'), 'utf8');
+  const call = /importScripts\(([^)]*)\)/.exec(source);
+  assert.ok(call, 'background.js calls importScripts');
+  const files = call[1].split(',').map((s) => s.trim().replace(/['"]/g, ''));
+  assert.ok(files.includes('smart-client.js') && files.includes('smart-fix.js'));
+  for (const f of files) assert.ok(fs.existsSync(path.join(ROOT, 'src', f)), f);
+});
+
+test('smart-mode scripts are loaded by the content script, runner after the logic it uses', () => {
+  const js = require('../manifest.json').content_scripts[0].js;
+  assert.ok(js.indexOf('src/smart-fix.js') !== -1 && js.indexOf('src/smart-runner.js') !== -1);
+  assert.ok(js.indexOf('src/smart-fix.js') < js.indexOf('src/content.js'));
+  assert.ok(js.indexOf('src/smart-runner.js') < js.indexOf('src/content.js'));
+});
+
 test('manifest can reach every page and repair already-open tabs', () => {
   const manifest = require('../manifest.json');
   assert.ok(manifest.permissions.includes('scripting'));
