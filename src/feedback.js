@@ -65,8 +65,8 @@
     return ctx.el.getBoundingClientRect();
   }
 
-  /** Tiny "teh -> the" bubble that fades by itself. Purely cosmetic and click-through. */
-  function hint(ctx, from, to) {
+  /** Shows `text` in the small bubble under the caret/field for `duration` ms (0 = until replaced). */
+  function bubble(ctx, text, duration, color) {
     try {
       const rect = anchorRect(ctx);
       if (!hintEl) {
@@ -77,19 +77,38 @@
           'border-radius:6px;background:#111827;color:#fff;font:12px/1.4 system-ui,sans-serif;' +
           'box-shadow:0 2px 8px rgba(0,0,0,.25);transition:opacity .2s;white-space:nowrap';
       }
-      hintEl.textContent = from + ' → ' + (to === '' ? '(removed)' : to);
-      hintEl.style.left = Math.max(4, Math.min(rect.left, window.innerWidth - 160)) + 'px';
-      hintEl.style.top = Math.min(rect.bottom + 4, window.innerHeight - 28) + 'px';
+      hintEl.textContent = text;
+      hintEl.style.background = color || '#111827';
+      hintEl.style.whiteSpace = text.length > 48 ? 'normal' : 'nowrap';
+      hintEl.style.maxWidth = '320px';
+      hintEl.style.left = Math.max(4, Math.min(rect.left, window.innerWidth - 330)) + 'px';
+      hintEl.style.top = Math.min(rect.bottom + 4, window.innerHeight - 40) + 'px';
       hintEl.style.opacity = '1';
       if (!hintEl.isConnected) document.documentElement.appendChild(hintEl);
       clearTimeout(hintTimer);
+      // A "working" bubble stays until replaced, but never longer than 30 s.
       hintTimer = setTimeout(() => {
         hintEl.style.opacity = '0';
         setTimeout(() => hintEl && hintEl.remove(), 250);
-      }, 1400);
+      }, duration || 30000);
     } catch (e) {
       /* cosmetic only */
     }
+  }
+
+  /** Tiny "teh -> the" bubble that fades by itself. Purely cosmetic and click-through. */
+  function hint(ctx, from, to) {
+    bubble(ctx, from + ' → ' + (to === '' ? '(removed)' : to), 1400);
+  }
+
+  const TOAST_COLORS = { busy: '#4f46e5', done: '#15803d', warn: '#b45309', error: '#b91c1c' };
+
+  /**
+   * Short status message next to the field, e.g. while polishing.
+   * kind: 'busy' (stays until the next toast) | 'done' | 'warn' | 'error'
+   */
+  function toast(ctx, message, kind) {
+    bubble(ctx, message, kind === 'busy' ? 0 : kind === 'done' ? 2200 : 4500, TOAST_COLORS[kind]);
   }
 
   /**
@@ -107,7 +126,7 @@
     glow(ctx.el);
   }
 
-  const api = { flash, hint, pulse };
+  const api = { flash, hint, pulse, toast };
   root.SpellFixFeedback = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
