@@ -31,6 +31,13 @@ SpellFix is built to be boring about your data.
   by pressing Backspace after a fix, your preferences, a count of fixes, and the
   last ten corrections shown in the popup (the misspelt word, its fix and the
   site's hostname).
+- **Ctrl+Space "polish" (optional, needs your own API key).** When you press
+  Ctrl+Space, SpellFix sends **only the text you selected, or the paragraph / box
+  you are in (up to 4000 characters)** to the AI provider you chose, to fix
+  grammar and sentence structure. It happens only on that key press, the same
+  redaction of emails, links, numbers and key-like strings applies, password /
+  name / address / code fields are excluded, and the answer is checked before it
+  replaces anything. It can be switched off in Settings.
 - **Where it runs.** The content script runs on all pages so it can fix typos
   anywhere you type. It never reads password, email, number, URL, name or address
   fields, and ignores code editors.
