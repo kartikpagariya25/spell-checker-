@@ -23,6 +23,11 @@
     capitalizeI: false, // opt-in: lone "i" -> "I"
     showHint: false, // opt-in: small "teh -> the" tooltip next to the field
     syncWords: false, // opt-in: sync kept words through the browser account
+    // Smart mode (AI). The API key is deliberately NOT here: only the background worker and the options page read it.
+    smartMode: false,
+    smartProvider: 'anthropic', // 'anthropic' | 'openai'
+    smartModel: '', // blank = provider default
+    smartLastError: '', // last problem reported by the provider, shown on the options page
   };
   const MAX_RECENT = 10;
   const MAX_LEARNED = 1000;
