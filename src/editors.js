@@ -215,12 +215,112 @@
     return true;
   }
 
+  const BLOCK_TAGS = new Set(['P', 'DIV', 'LI', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'BLOCKQUOTE']);
+
+  // Nearest paragraph-like element around `node`, or the editing host itself.
+  function blockOf(node, host) {
+    let el = node.nodeType === 1 ? node : node.parentElement;
+    while (el && el !== host) {
+      if (BLOCK_TAGS.has(el.tagName)) return el;
+      el = el.parentElement;
+    }
+    return host;
+  }
+
+  /**
+   * What "polish" should rewrite, plus a function that replaces it:
+   *   fields : the selection, or the whole text
+   *   rich   : the selection (within one paragraph), or the paragraph around the caret
+   * apply(replacement) verifies the text is still exactly what was read, performs
+   * ONE edit (one Ctrl+Z restores it) and returns whether it did.
+   * Returns null when no safe target can be found.
+   * @returns {{text: string, apply: (replacement: string) => boolean} | null}
+   */
+  function getPolishTarget(ctx) {
+    if (ctx.kind === 'field') {
+      const el = ctx.el;
+      let s;
+      let e;
+      try {
+        s = el.selectionStart;
+        e = el.selectionEnd;
+      } catch (err) {
+        return null;
+      }
+      if (s == null) return null;
+      const start = e > s ? s : 0;
+      const end = e > s ? e : el.value.length;
+      const text = el.value.slice(start, end);
+      return {
+        text,
+        apply(replacement) {
+          if (el.value.slice(start, end) !== text) return false;
+          el.focus();
+          el.setSelectionRange(start, end);
+          if (!insertViaExecCommand(replacement)) {
+            el.setRangeText(replacement, start, end, 'end');
+            el.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertText', data: replacement }));
+          }
+          const caret = start + replacement.length;
+          try {
+            el.setSelectionRange(caret, caret);
+          } catch (err) {
+            /* best effort */
+          }
+          return true;
+        },
+      };
+    }
+
+    const sel = selectionFor(ctx.el);
+    if (!sel || sel.rangeCount === 0) return null;
+    const range = sel.getRangeAt(0);
+    if (!ctx.el.contains(range.commonAncestorContainer)) return null;
+
+    if (!sel.isCollapsed) {
+      const first = blockOf(range.startContainer, ctx.el);
+      const last = blockOf(range.endContainer, ctx.el);
+      if (first !== last) return null; // spans several paragraphs: ask the user to narrow it down
+      const live = range.cloneRange();
+      const text = live.toString();
+      return {
+        text,
+        apply(replacement) {
+          if (live.toString() !== text) return false;
+          sel.removeAllRanges();
+          sel.addRange(live);
+          return insertViaExecCommand(replacement);
+        },
+      };
+    }
+
+    const node = sel.anchorNode;
+    if (!node) return null;
+    const block = blockOf(node, ctx.el);
+    // Several lines/paragraphs directly inside the host and none around the caret: can't isolate one.
+    if (block === ctx.el && ctx.el.querySelector('p, div, li, h1, h2, h3, h4, h5, h6, blockquote, br')) return null;
+    const text = block.textContent || '';
+    return {
+      text,
+      apply(replacement) {
+        if (!block.isConnected || (block.textContent || '') !== text) return false;
+        const whole = document.createRange();
+        whole.selectNodeContents(block);
+        sel.removeAllRanges();
+        sel.addRange(whole);
+        return insertViaExecCommand(replacement);
+      },
+    };
+  }
+
   /** Whole text of the field, regardless of where the caret is. */
   function fieldText(ctx) {
     return ctx.kind === 'field' ? ctx.el.value : ctx.el.textContent || '';
   }
 
-  const api = { resolve, getCaretContext, replaceBeforeCaret, replaceText, selectionFor, richCaret, fieldText };
+  const api = {
+    resolve, getCaretContext, replaceBeforeCaret, replaceText, getPolishTarget, selectionFor, richCaret, fieldText,
+  };
   root.SpellFixEditors = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
