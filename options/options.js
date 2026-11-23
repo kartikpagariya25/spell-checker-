@@ -7,6 +7,7 @@
     sensitivity: 'balanced', fixOnEnter: true, showHighlight: true,
     includeSearchBoxes: true, fixCapitalizedAtSentenceStart: true,
     contextFixes: false, capitalizeI: false, showHint: false, syncWords: false,
+    smartMode: false, smartProvider: 'anthropic', smartModel: '', smartLastError: '',
   };
   const TOGGLES = [
     'fixOnEnter', 'showHighlight', 'includeSearchBoxes', 'fixCapitalizedAtSentenceStart',
@@ -46,7 +47,80 @@
       list.appendChild(li);
     });
     $('noSites').hidden = state.disabledHosts.length > 0;
+    renderSmart();
   }
+
+  // --- Smart mode (AI) ---------------------------------------------------------
+  // The API key is read here only to show "saved / ends with ...". It is kept out
+  // of `state` and never exported with the backup file.
+
+  let savedKey = '';
+
+  function smartSay(text, kind) {
+    const el = $('smartMessage');
+    el.textContent = text;
+    el.className = kind || '';
+  }
+
+  function renderSmart() {
+    $('smartProvider').value = state.smartProvider;
+    $('smartModel').value = state.smartModel;
+    $('smartModel').placeholder = SpellFixSmartClient.DEFAULT_MODELS[state.smartProvider] + ' (default)';
+    $('smartMode').checked = !!state.smartMode;
+    $('keyStatus').textContent = savedKey ? 'Key saved (ends with ' + savedKey.slice(-4) + ').' : 'No key saved.';
+    $('removeKey').disabled = !savedKey;
+    $('testSmart').disabled = !savedKey;
+    $('smartError').hidden = !state.smartLastError;
+    $('smartError').textContent = state.smartLastError ? 'Last problem: ' + state.smartLastError : '';
+  }
+
+  function loadKey() {
+    chrome.storage.local.get({ smartKey: '' }, (items) => {
+      savedKey = items.smartKey || '';
+      renderSmart();
+    });
+  }
+
+  $('smartProvider').addEventListener('change', (e) => save({ smartProvider: e.target.value }));
+  $('smartModel').addEventListener('change', (e) => save({ smartModel: e.target.value.trim() }));
+
+  $('saveKey').addEventListener('click', () => {
+    const key = $('smartKey').value.trim();
+    if (key.length < 20 || /\s/.test(key)) return smartSay('That does not look like an API key.', 'bad');
+    chrome.storage.local.set({ smartKey: key }, () => {
+      $('smartKey').value = '';
+      savedKey = key;
+      renderSmart();
+      smartSay('Key saved. Press "Test connection" to check it.', 'good');
+    });
+  });
+
+  $('removeKey').addEventListener('click', () => {
+    chrome.storage.local.remove('smartKey', () => {
+      savedKey = '';
+      save({ smartMode: false, smartLastError: '' });
+      smartSay('Key removed and Smart mode turned off.', '');
+    });
+  });
+
+  $('smartMode').addEventListener('change', (e) => {
+    if (e.target.checked && !savedKey) {
+      e.target.checked = false;
+      return smartSay('Add an API key first.', 'bad');
+    }
+    save({ smartMode: e.target.checked, smartLastError: '' });
+  });
+
+  $('testSmart').addEventListener('click', () => {
+    smartSay('Testing...', '');
+    $('testSmart').disabled = true;
+    chrome.runtime.sendMessage({ type: 'spellfix-smart-test' }, (reply) => {
+      $('testSmart').disabled = !savedKey;
+      if (chrome.runtime.lastError || !reply) return smartSay('No answer from the extension. Reload it and try again.', 'bad');
+      if (reply.ok) smartSay('Works. "their going to the stor tomorow" became "' + reply.fixed + '".', 'good');
+      else smartSay(reply.error, 'bad');
+    });
+  });
 
   function exportFile() {
     const data = {
@@ -98,6 +172,7 @@
   chrome.storage.local.get(DEFAULTS, (items) => {
     state = Object.assign({}, DEFAULTS, items);
     render();
+    loadKey();
   });
   chrome.storage.onChanged.addListener(() => {
     chrome.storage.local.get(DEFAULTS, (items) => {
