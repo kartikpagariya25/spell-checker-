@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.4.1
+
+### Added
+- xAI (Grok) as a third Smart mode provider (`api.x.ai`, default model `grok-4.7`,
+  editable in Settings).
+
+### Changed
+- OpenAI-style providers now send `max_completion_tokens` (2000) so reasoning
+  models have room to finish; this also works with newer OpenAI models.
+
 ## 0.4.0
 
 ### Added
