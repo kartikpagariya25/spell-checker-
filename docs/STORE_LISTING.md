@@ -56,6 +56,10 @@ Automatically correct spelling mistakes in the text the user types.
   spelling. The developer receives nothing. Disclose as "user content - website
   content / text typed by the user" with purpose "app functionality", only when
   the user enables the feature.
+- **Optional Ctrl+Space polish (user-initiated, requires the user's own API key):** only when the user presses
+  the shortcut, the selected text (or current paragraph / box, up to 4000 characters, with the same
+  redaction) is sent to the user's chosen provider to correct grammar and sentence structure. Same
+  disclosure category and purpose as Smart mode.
 - No remote code (the AI returns text only, which is validated, never executed). No analytics.
 - Privacy policy: see `PRIVACY.md` in the repository.
 
