@@ -43,6 +43,28 @@ keystroke ──► content.js ──► text-utils ──► corrector ──�
 - **Counters** (`stats.js`) are flushed together with the recent-fixes list every
   five seconds to avoid hammering storage.
 
+## Smart mode (sentence pass, opt-in)
+
+```
+typing ─► content.js ─► smart-runner ─► (redact) ─► background.js ─► smart-client ─► provider
+                          │  when: . ! ? / Enter / 1.5 s pause          │ key lives only here
+                          └◄─ validate (smart-fix) ◄─ <fixed>…</fixed> ◄┘
+                          └─► editors.replaceText (one edit, caret restored)
+```
+
+- `smart-fix.js` is pure: finds the sentence before the caret, flags suspected
+  typos (words unknown to the dictionary and not kept by the user), redacts
+  private-looking tokens, and **validates the answer** word by word (same word
+  count, same punctuation and spacing, each change within 3 letters or a known
+  confusable such as their/there).
+- `smart-runner.js` decides when to ask, de-duplicates sentences, rate limits
+  (12 per minute per page) and drops answers if the text changed meanwhile.
+- `smart-client.js` builds provider requests, enforces timeouts and maps HTTP
+  errors to messages without ever echoing the key. The service worker adds a
+  second rate limit (30 per minute).
+- Everything except the DOM edit and the fetch is covered by Node tests with a
+  fake editor and a fake provider.
+
 ## Staying alive across tabs
 
 - `start()` attaches all listeners synchronously and loads settings afterwards.
