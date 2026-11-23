@@ -10,6 +10,7 @@
     anthropic: 'claude-haiku-5-5',
     openai: 'gpt-4o-mini',
     xai: 'grok-4.7',
+    groq: 'openai/gpt-oss-20b',
   };
   const PROVIDERS = Object.keys(DEFAULT_MODELS);
   const MAX_TOKENS = 600;
@@ -20,7 +21,21 @@
   const OPENAI_COMPATIBLE = {
     openai: 'https://api.openai.com/v1/chat/completions',
     xai: 'https://api.x.ai/v1/chat/completions',
+    groq: 'https://api.groq.com/openai/v1/chat/completions',
   };
+
+  /**
+   * Guesses which provider an API key belongs to from its well-known prefix.
+   * Returns null when it can't tell (so we never block an unusual key).
+   */
+  function keyLooksLike(key) {
+    const k = String(key || '').trim();
+    if (/^sk-ant-/.test(k)) return 'anthropic';
+    if (/^xai-/.test(k)) return 'xai';
+    if (/^gsk_/.test(k)) return 'groq';
+    if (/^sk-/.test(k)) return 'openai';
+    return null;
+  }
 
   function modelFor(provider, model) {
     return (model && model.trim()) || DEFAULT_MODELS[provider];
@@ -70,7 +85,9 @@
         },
       };
     }
-    throw new Error('Unknown provider: ' + provider);
+    throw new Error(
+      'Unknown provider "' + provider + '". If you just updated SpellFix, reload it in chrome://extensions.'
+    );
   }
 
   /** Pulls the reply text out of a provider's JSON response, or null. */
@@ -141,7 +158,7 @@
     };
   }
 
-  const api = { DEFAULT_MODELS, PROVIDERS, modelFor, buildRequest, parseResponse, requestReply, createRateLimiter, describeHttpError };
+  const api = { DEFAULT_MODELS, PROVIDERS, keyLooksLike, modelFor, buildRequest, parseResponse, requestReply, createRateLimiter, describeHttpError };
   root.SpellFixSmartClient = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
