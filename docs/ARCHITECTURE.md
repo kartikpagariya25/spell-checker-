@@ -65,6 +65,16 @@ typing ─► content.js ─► smart-runner ─► (redact) ─► background.j
 - Everything except the DOM edit and the fetch is covered by Node tests with a
   fake editor and a fake provider.
 
+## Ctrl+Space polish
+
+`content.js` intercepts Ctrl+Space (only in eligible fields, only when enabled) and
+asks `polish.js` to run. `Editors.getPolishTarget` picks what to rewrite (selection,
+caret paragraph or whole field) and returns an `apply` function that re-checks the
+text is unchanged and performs a single edit. The text is redacted, sent through
+the background worker (`spellfix-polish`, 10/min, 4000 tokens, 25 s timeout), and
+the `<polished>` answer is validated (placeholders, code fences, line count,
+length ratio) before `apply` runs. Status goes to `Feedback.toast`.
+
 ## Staying alive across tabs
 
 - `start()` attaches all listeners synchronously and loads settings afterwards.
