@@ -27,6 +27,39 @@ test('openai request has the right url, auth and messages', () => {
   assert.deepEqual(body.messages.map((m) => m.role), ['system', 'user']);
 });
 
+test('xai (Grok) request uses the xAI endpoint with the OpenAI-style body', () => {
+  const r = C.buildRequest(Object.assign({ provider: 'xai' }, base));
+  assert.equal(r.url, 'https://api.x.ai/v1/chat/completions');
+  assert.equal(r.init.headers.authorization, 'Bearer sk-test-KEY');
+  const body = JSON.parse(r.init.body);
+  assert.equal(body.model, C.DEFAULT_MODELS.xai);
+  assert.equal(body.model, 'grok-4.7');
+  assert.deepEqual(body.messages.map((m) => m.role), ['system', 'user']);
+  assert.equal(body.messages[0].content, 'SYS');
+  assert.equal(body.temperature, 0);
+});
+
+test('OpenAI-style providers leave room for reasoning tokens', () => {
+  for (const provider of ['openai', 'xai']) {
+    const body = JSON.parse(C.buildRequest(Object.assign({ provider }, base)).init.body);
+    assert.ok(body.max_completion_tokens >= 1000, provider);
+    assert.equal(body.max_tokens, undefined, provider);
+  }
+});
+
+test('xai responses are parsed like OpenAI responses', () => {
+  assert.equal(C.parseResponse('xai', { choices: [{ message: { content: '<fixed>x</fixed>' } }] }), '<fixed>x</fixed>');
+  assert.equal(C.parseResponse('xai', { choices: [] }), null);
+});
+
+test('every listed provider can build a request and has a default model', () => {
+  assert.deepEqual(C.PROVIDERS.slice().sort(), ['anthropic', 'openai', 'xai']);
+  for (const provider of C.PROVIDERS) {
+    assert.ok(C.DEFAULT_MODELS[provider], provider);
+    assert.doesNotThrow(() => C.buildRequest(Object.assign({ provider }, base)), provider);
+  }
+});
+
 test('a custom model overrides the default, blank falls back', () => {
   assert.equal(C.modelFor('anthropic', '  my-model '), 'my-model');
   assert.equal(C.modelFor('anthropic', ''), C.DEFAULT_MODELS.anthropic);
