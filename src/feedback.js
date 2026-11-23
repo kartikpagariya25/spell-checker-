@@ -102,7 +102,12 @@
     else highlightWord(ctx, wordLength, trailing);
   }
 
-  const api = { flash, hint };
+  /** A soft glow on the field, used after a whole-sentence (smart) fix. */
+  function pulse(ctx) {
+    glow(ctx.el);
+  }
+
+  const api = { flash, hint, pulse };
   root.SpellFixFeedback = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
