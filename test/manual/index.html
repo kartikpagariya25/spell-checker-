@@ -42,6 +42,15 @@
       runtime: {
         id: 'manual-test',
         sendMessage: (message, cb) => {
+          if (message.type === 'spellfix-polish') {
+            // Fake editor: fixes "i", "has went", "dont" and adds a final full stop per line.
+            window.__lastPolishRequest = message;
+            const polished = message.text.split('\n').map((line) => line.trim() === '' ? line : line
+              .replace(/\bi\b/g, 'I').replace(/\bhas went\b/g, 'went').replace(/\bdont\b/g, "don't")
+              .replace(/^\s*([a-z])/, (m, c) => m.replace(c, c.toUpperCase())).replace(/[^.!?]\s*$/, (m) => m.trim() + '.')
+            ).join('\n');
+            return setTimeout(() => cb({ ok: true, reply: '<polished>' + polished + '</polished>' }), 40);
+          }
           window.__lastSmartRequest = message;
           const fixed = message.sentence
             .replace(/\btheir going\b/, "they're going").replace(/\bstor\b/, 'store').replace(/\btomorow\b/, 'tomorrow');
@@ -60,6 +69,7 @@
   <script src="../../src/context-fixes.js"></script>
   <script src="../../src/smart-fix.js"></script>
   <script src="../../src/smart-runner.js"></script>
+  <script src="../../src/polish.js"></script>
   <script src="../../src/field-rules.js"></script>
   <script src="../../src/editors.js"></script>
   <script src="../../src/feedback.js"></script>
