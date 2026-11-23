@@ -105,8 +105,8 @@ The offline checker fixes typos word by word. **Smart mode** adds a sentence
 pass that understands *meaning and tone*: `their going to the stor tomorow`
 becomes `they're going to the store tomorrow`.
 
-1. Open Settings, choose a provider (Anthropic or OpenAI), paste **your own API
-   key**, press *Test connection*, then turn Smart mode on.
+1. Open Settings, choose a provider (Anthropic, OpenAI or xAI Grok), paste **your
+   own API key**, press *Test connection*, then turn Smart mode on.
 2. When you end a sentence (`. ! ?`), press Enter, or pause for about 1.5 s,
    SpellFix checks the sentence. Only sentences that still contain a word it
    doesn't recognise are sent; emails, links, numbers and @mentions are replaced
