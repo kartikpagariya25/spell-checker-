@@ -205,15 +205,99 @@
     corrector = null;
   }
 
+  // --- Smart mode (AI, opt-in) -----------------------------------------------------
+
+  let smartRunner = null;
+  let lastSmartError = '';
+
+  function sendToBackground(sentence) {
+    return new Promise((resolve) => {
+      try {
+        chrome.runtime.sendMessage({ type: 'spellfix-smart', sentence }, (reply) => {
+          if (chrome.runtime.lastError || !reply) {
+            resolve({ ok: false, error: 'SpellFix was reloaded. Refresh this page to use Smart mode.' });
+          } else {
+            resolve(reply);
+          }
+        });
+      } catch (e) {
+        resolve({ ok: false, error: 'SpellFix was reloaded. Refresh this page to use Smart mode.' });
+      }
+    });
+  }
+
+  function getSmartRunner() {
+    if (smartRunner || !root.SpellFixSmartRunner || typeof chrome === 'undefined' || !chrome.runtime || !chrome.runtime.sendMessage) {
+      return smartRunner;
+    }
+    smartRunner = root.SpellFixSmartRunner.createSmartRunner({
+      getSettings: Settings.get,
+      isKnown: (word) => getCorrector().isKnown(word),
+      getIgnore: () => {
+        const ignore = new Set(Settings.get().learned);
+        sessionIgnore.forEach((w) => ignore.add(w));
+        return ignore;
+      },
+      send: sendToBackground,
+      getCaretContext: Editors.getCaretContext,
+      apply: (ctx, original, replacement) => {
+        busy = true; // our own edit must not trigger corrections
+        try {
+          return Editors.replaceText(ctx, original, replacement);
+        } finally {
+          busy = false;
+        }
+      },
+      smart: root.SpellFixSmartFix,
+      distance: root.SpellFixCorrector.boundedDistance,
+      onFixed: (ctx, result) => {
+        lastCorrection = null; // Backspace undo is for instant fixes; Ctrl+Z undoes this whole sentence
+        undoWatch = null;
+        for (const change of result.changes) {
+          recordRecent(change.from, change.to);
+          bumpCount();
+        }
+        Feedback.pulse(ctx);
+        if (lastSmartError) {
+          lastSmartError = '';
+          Settings.save({ smartLastError: '' });
+        }
+      },
+      onError: (message) => {
+        if (message === lastSmartError) return;
+        lastSmartError = message;
+        Settings.save({ smartLastError: message });
+      },
+      setTimer: (fn, ms) => setTimeout(fn, ms),
+      clearTimer: (id) => clearTimeout(id),
+      now: () => Date.now(),
+    });
+    return smartRunner;
+  }
+
+  /** data: the character just typed ('.', '!', '?', '\n') ends a sentence; anything else is ordinary typing. */
+  function smartTyping(ctx, data) {
+    const runner = getSmartRunner();
+    if (!runner) return;
+    if (data === '.' || data === '!' || data === '?' || data === '\n') runner.onSentenceEnd(ctx);
+    else runner.onActivity(ctx);
+  }
+
   function onInput(event) {
     if (event.inputType === 'historyUndo' && !busy) return learnFromBrowserUndo(event);
     if (!active || busy || event.isComposing) return;
     if (event.inputType !== 'insertText' || !Text.isDelimiter(event.data)) {
       if (!busy) lastCorrection = null;
+      if (Settings.get().smartMode) {
+        const typing = editableFor(event);
+        if (typing) smartTyping(typing, null);
+      }
       return;
     }
     const ctx = editableFor(event);
-    if (ctx) correctWordBeforeCaret(ctx, true);
+    if (!ctx) return;
+    correctWordBeforeCaret(ctx, true); // instant offline fix first
+    if (Settings.get().smartMode) smartTyping(ctx, event.data);
   }
 
   // Some rich editors cancel beforeinput and never fire `input`; catching the
@@ -243,9 +327,13 @@
     lastCorrection = null;
 
     // Fix the last word before a chat box / form gets submitted with Enter.
-    if (key === 'Enter' && !event.ctrlKey && !event.metaKey && Settings.get().fixOnEnter) {
+    if (key === 'Enter' && !event.ctrlKey && !event.metaKey) {
       const ctx = editableFor(event);
-      if (ctx) correctWordBeforeCaret(ctx, false);
+      if (ctx) {
+        if (Settings.get().fixOnEnter) correctWordBeforeCaret(ctx, false);
+        // Best effort: the AI answer may arrive after a chat box has already sent the message.
+        if (Settings.get().smartMode) smartTyping(ctx, '\n');
+      }
     }
   }
 
